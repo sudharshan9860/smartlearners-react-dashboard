@@ -1,0 +1,47 @@
+.quiz-tab {
+  animation: fadeUp 0.5s ease-out;
+}
+
+.quiz-stat-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 300px;
+  margin: 32px auto;
+  border-top: 4px solid var(--orange);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.chart-container {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-top: 32px;
+}
+
+.chart-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 24px;
+}
+
+.chart-wrapper {
+  height: 400px;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .chart-container {
+    padding: 20px;
+  }
+
+  .chart-wrapper {
+    height: 300px;
+  }
+}

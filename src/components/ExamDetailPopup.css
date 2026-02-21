@@ -1,0 +1,367 @@
+.exam-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.exam-detail-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 900px;
+  max-height: 85vh;
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+  overflow-y: auto;
+  animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.popup-close-btn {
+  position: sticky;
+  top: 16px;
+  left: calc(100% - 60px);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 2px solid var(--gray-300);
+  color: var(--gray-700);
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.popup-close-btn:hover {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--white);
+  transform: rotate(90deg);
+}
+
+.popup-header {
+  padding: 40px 40px 32px;
+  background: linear-gradient(135deg, var(--purple), var(--indigo));
+  color: var(--white);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
+.popup-header h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.popup-score-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.popup-score {
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.popup-percentage {
+  font-size: 1.5rem;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.popup-grade {
+  padding: 8px 20px;
+  border-radius: 24px;
+  font-size: 1.125rem;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.popup-feedback {
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.feedback-box {
+  background: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border-left: 4px solid;
+}
+
+.feedback-box.border-green {
+  border-left-color: var(--green);
+}
+
+.feedback-box.border-orange {
+  border-left-color: var(--orange);
+}
+
+.feedback-box.border-blue {
+  border-left-color: var(--blue);
+}
+
+.feedback-box.border-purple {
+  border-left-color: var(--purple);
+}
+
+.feedback-box.border-indigo {
+  border-left-color: var(--indigo);
+}
+
+.fb-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.fb-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.fb-dot.green {
+  background: var(--green);
+}
+
+.fb-dot.orange {
+  background: var(--orange);
+}
+
+.fb-dot.blue {
+  background: var(--blue);
+}
+
+.fb-dot.purple {
+  background: var(--purple);
+}
+
+.fb-dot.indigo {
+  background: var(--indigo);
+}
+
+.fb-label {
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-700);
+}
+
+.fb-text {
+  font-size: 0.9375rem;
+  color: var(--gray-800);
+  line-height: 1.7;
+}
+
+.fb-text ul,
+.fb-text ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.fb-text li {
+  margin: 6px 0;
+}
+
+.popup-actions {
+  padding: 0 40px 32px;
+}
+
+.load-questions-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.load-questions-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+.question-section {
+  padding: 32px 40px 40px;
+  background: var(--gray-50);
+  border-top: 2px solid var(--gray-200);
+}
+
+.question-section h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 24px;
+}
+
+.questions-loading {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.questions-loading .loader {
+  margin: 0 auto 16px;
+}
+
+.questions-loading p {
+  color: var(--gray-500);
+  font-size: 0.9375rem;
+}
+
+.questions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.question-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: fadeUp 0.4s ease-out;
+}
+
+.q-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.q-number {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--indigo);
+  color: var(--white);
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.875rem;
+}
+
+.q-text {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  line-height: 1.5;
+}
+
+.q-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.q-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.q-stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.q-stat-value {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.q-stat-value.text-green {
+  color: var(--green);
+}
+
+.q-stat-value.text-orange {
+  color: var(--orange);
+}
+
+.q-stat-value.text-red {
+  color: var(--red);
+}
+
+.no-questions {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.no-questions p {
+  color: var(--gray-500);
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 768px) {
+  .exam-detail-popup {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .popup-header {
+    padding: 24px;
+  }
+
+  .popup-header h2 {
+    font-size: 1.375rem;
+  }
+
+  .popup-score-info {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .popup-score {
+    font-size: 1.5rem;
+  }
+
+  .popup-percentage {
+    font-size: 1.125rem;
+  }
+
+  .popup-feedback {
+    padding: 24px;
+  }
+
+  .popup-actions {
+    padding: 0 24px 24px;
+  }
+
+  .question-section {
+    padding: 24px;
+  }
+
+  .q-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}

@@ -1,0 +1,25 @@
+.dashboard {
+  min-height: 100vh;
+  background: var(--gray-100);
+}
+
+.dashboard-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.tab-content {
+  margin-top: 32px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 16px;
+  }
+
+  .tab-content {
+    margin-top: 24px;
+  }
+}
