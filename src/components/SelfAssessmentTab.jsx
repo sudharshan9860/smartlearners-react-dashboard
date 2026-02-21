@@ -5,15 +5,37 @@ import GapCard from "./GapCard";
 import { useKatex } from "../hooks/useKatex";
 import "./SelfAssessmentTab.css";
 
+// ── Filter constants (must be declared BEFORE they are used) ──────────────────
+// "Cannot access before initialization" error happens when const is placed
+// after the line that references it. Always declare constants at the top.
+const FILTER_SUBJECT_KEYWORD = "mathematics -3"; // lowercase for comparison
+const FILTER_DATE_CUTOFF = new Date("2026-02-21T18:00:00"); // 21 Feb 2026, 6 PM IST
+
 const SelfAssessmentTab = () => {
   const { selfAssessmentData } = useDashboard();
   const katexRef = useKatex();
 
-  const data = Array.isArray(selfAssessmentData)
-    ? selfAssessmentData
-    : selfAssessmentData?.data || [];
+  // ── Real API shape: { message: "...", data: Array(122) } ──────────────────
+  // So we always pull from .data — fall back to [] if missing
+  const rawData = Array.isArray(selfAssessmentData)
+    ? selfAssessmentData // in case API ever returns plain array
+    : selfAssessmentData?.data || []; // normal shape from your backend
 
-  // Calculate statistics
+  // ── OR filter: subject keyword OR date after cutoff ───────────────────────
+  // A row is shown if AT LEAST ONE condition is true.
+  const data = rawData.filter((item) => {
+    const subjectMatch =
+      item.subject?.toLowerCase().includes(FILTER_SUBJECT_KEYWORD) ?? false;
+
+    // Adjust field name if your API uses a different key for submission date
+    const raw = item.submitted_at ?? item.created_at ?? item.date ?? null;
+    const itemDate = raw ? new Date(raw) : null;
+    const dateMatch = itemDate ? itemDate > FILTER_DATE_CUTOFF : false;
+
+    return subjectMatch || dateMatch;
+  });
+
+  // ── Statistics (computed from filtered data) ──────────────────────────────
   const total = data.length;
   const avgScore =
     total > 0
@@ -75,8 +97,8 @@ const SelfAssessmentTab = () => {
       {data.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">📝</div>
-          <h3>No submissions yet</h3>
-          <p>Self assessment data will appear here</p>
+          <h3>No matching submissions</h3>
+          <p>No data found for the active subject / date filter</p>
         </div>
       ) : (
         <div className="gap-cards-container">

@@ -1,18 +1,28 @@
 import axios from "axios";
 import { config } from "../config";
 
-// Create axios instance
-const axiosInstance = axios.create({
-  baseURL: config.apiBaseUrl || "", // Empty string for relative URLs
-  timeout: 30000,
-  headers: {
-    "Content-Type": "application/json",
-  },
+// ─── Token Persistence (Fix #1) ───────────────────────────────────────────────
+// Tokens are now kept in sessionStorage so they survive page refreshes
+// but are cleared when the browser tab is closed (safer than localStorage).
+const TOKEN_KEYS = { access: "sl_access", refresh: "sl_refresh" };
+
+const loadTokens = () => ({
+  access: sessionStorage.getItem(TOKEN_KEYS.access),
+  refresh: sessionStorage.getItem(TOKEN_KEYS.refresh),
 });
 
-// Token management
-let accessToken = null;
-let refreshToken = null;
+const persistTokens = (access, refresh) => {
+  sessionStorage.setItem(TOKEN_KEYS.access, access);
+  sessionStorage.setItem(TOKEN_KEYS.refresh, refresh);
+};
+
+const wipeTokens = () => {
+  sessionStorage.removeItem(TOKEN_KEYS.access);
+  sessionStorage.removeItem(TOKEN_KEYS.refresh);
+};
+
+// In-memory references (loaded from sessionStorage on module init)
+let { access: accessToken, refresh: refreshToken } = loadTokens();
 let isRefreshing = false;
 let failedQueue = [];
 
@@ -27,29 +37,32 @@ const processQueue = (error, token = null) => {
   failedQueue = [];
 };
 
-// Request interceptor - Add auth token to requests
+// ─── Axios Instance ────────────────────────────────────────────────────────────
+const axiosInstance = axios.create({
+  baseURL: config.apiBaseUrl || "",
+  timeout: 30000,
+  headers: { "Content-Type": "application/json" },
+});
+
+// Request interceptor — inject Bearer token
 axiosInstance.interceptors.request.use(
-  (config) => {
+  (cfg) => {
     if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+      cfg.headers.Authorization = `Bearer ${accessToken}`;
     }
-    return config;
+    return cfg;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error),
 );
 
-// Response interceptor - Handle token refresh
+// Response interceptor — silent token refresh on 401
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // If error is 401 and we haven't retried yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
-        // Wait for the refresh to complete
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
@@ -57,9 +70,7 @@ axiosInstance.interceptors.response.use(
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return axiosInstance(originalRequest);
           })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
+          .catch((err) => Promise.reject(err));
       }
 
       originalRequest._retry = true;
@@ -69,32 +80,29 @@ axiosInstance.interceptors.response.use(
         try {
           const response = await axios.post(
             `${config.apiBaseUrl}/api/token/refresh/`,
-            {
-              refresh: refreshToken,
-            },
+            { refresh: refreshToken },
           );
 
           const newAccessToken = response.data.access;
           accessToken = newAccessToken;
 
-          // Update the failed requests with new token
-          processQueue(null, newAccessToken);
+          // Persist updated access token
+          sessionStorage.setItem(TOKEN_KEYS.access, newAccessToken);
 
-          // Retry the original request
+          processQueue(null, newAccessToken);
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
           processQueue(refreshError, null);
-          // Refresh failed, logout user
           accessToken = null;
           refreshToken = null;
+          wipeTokens();
           window.location.href = "/login";
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;
         }
       } else {
-        // No refresh token, redirect to login
         window.location.href = "/login";
         return Promise.reject(error);
       }
@@ -104,20 +112,19 @@ axiosInstance.interceptors.response.use(
   },
 );
 
-// Public methods to manage tokens
+// ─── Public API ────────────────────────────────────────────────────────────────
 export const setTokens = (access, refresh) => {
   accessToken = access;
   refreshToken = refresh;
+  persistTokens(access, refresh); // write-through to sessionStorage
 };
 
 export const clearTokens = () => {
   accessToken = null;
   refreshToken = null;
+  wipeTokens();
 };
 
-export const getTokens = () => ({
-  accessToken,
-  refreshToken,
-});
+export const getTokens = () => ({ accessToken, refreshToken });
 
 export default axiosInstance;

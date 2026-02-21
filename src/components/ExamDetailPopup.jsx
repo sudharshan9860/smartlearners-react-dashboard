@@ -1,12 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import DOMPurify from "dompurify";
 import { dashboardAPI } from "../api/dashboard";
 import { renderKaTeX } from "../hooks/useKatex";
 import "./ExamDetailPopup.css";
+
+// ─── Sanitize helper (Fix #3) ──────────────────────────────────────────────────
+// dangerouslySetInnerHTML renders raw HTML from the server. If any of that data
+// is user-influenced (feedback, analysis text) it is an XSS vector.
+// DOMPurify strips all executable content while keeping safe formatting tags.
+const sanitize = (html) =>
+  DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "b",
+      "strong",
+      "i",
+      "em",
+      "ul",
+      "ol",
+      "li",
+      "br",
+      "span",
+      "p",
+    ],
+    ALLOWED_ATTR: [],
+  });
 
 const ExamDetailPopup = ({ examResult, onClose }) => {
   const [questionData, setQuestionData] = useState(null);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [showQuestions, setShowQuestions] = useState(false);
+
+  // ─── Fix #6: ref instead of document.querySelector ─────────────────────────
+  // document.querySelector(".exam-detail-popup") is fragile — if multiple popups
+  // ever exist, or CSS class names change, it silently breaks. A ref is the
+  // idiomatic React way to reference a specific DOM node.
+  const popupRef = useRef(null);
 
   const {
     exam_name,
@@ -22,19 +50,14 @@ const ExamDetailPopup = ({ examResult, onClose }) => {
     id,
   } = examResult;
 
+  // Render KaTeX whenever the popup content or question data changes
   useEffect(() => {
-    // Render KaTeX in popup
-    const timer = setTimeout(() => {
-      const popupElement = document.querySelector(".exam-detail-popup");
-      if (popupElement) {
-        renderKaTeX(popupElement);
-      }
-    }, 100);
-
+    if (!popupRef.current) return;
+    const timer = setTimeout(() => renderKaTeX(popupRef.current), 100);
     return () => clearTimeout(timer);
   }, [examResult, questionData]);
 
-  const loadQuestions = async () => {
+  const loadQuestions = useCallback(async () => {
     if (showQuestions) {
       setShowQuestions(false);
       return;
@@ -51,11 +74,10 @@ const ExamDetailPopup = ({ examResult, onClose }) => {
     } finally {
       setLoadingQuestions(false);
     }
-  };
+  }, [showQuestions, id]);
 
   const formatFeedbackText = (input) => {
     if (!input) return "";
-
     if (Array.isArray(input)) {
       return (
         "<ul>" +
@@ -63,17 +85,11 @@ const ExamDetailPopup = ({ examResult, onClose }) => {
         "</ul>"
       );
     }
-
     return String(input).replace(/\n/g, "<br>");
   };
 
   const feedbackSections = [
-    {
-      key: "strengths",
-      label: "Strengths",
-      color: "green",
-      data: strengths,
-    },
+    { key: "strengths", label: "Strengths", color: "green", data: strengths },
     {
       key: "improvements",
       label: "Areas for Improvement",
@@ -98,17 +114,16 @@ const ExamDetailPopup = ({ examResult, onClose }) => {
       color: "indigo",
       data: parent_note,
     },
-  ].filter(
-    (section) =>
-      section.data && (!Array.isArray(section.data) || section.data.length > 0),
-  );
+  ].filter((s) => s.data && (!Array.isArray(s.data) || s.data.length > 0));
 
   const questions = questionData?.question_data || [];
 
   return (
     <>
       <div className="exam-popup-overlay" onClick={onClose} />
-      <div className="exam-detail-popup">
+
+      {/* Fix #6: ref attached here — no more document.querySelector */}
+      <div className="exam-detail-popup" ref={popupRef}>
         <button className="popup-close-btn" onClick={onClose}>
           ✕
         </button>
@@ -134,10 +149,11 @@ const ExamDetailPopup = ({ examResult, onClose }) => {
                 <span className={`fb-dot ${section.color}`} />
                 <div className={`fb-label ${section.key}`}>{section.label}</div>
               </div>
+              {/* Fix #3: sanitize HTML before injecting */}
               <div
                 className="fb-text"
                 dangerouslySetInnerHTML={{
-                  __html: formatFeedbackText(section.data),
+                  __html: sanitize(formatFeedbackText(section.data)),
                 }}
               />
             </div>

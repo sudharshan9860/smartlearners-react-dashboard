@@ -1,53 +1,122 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useDashboard } from "../contexts/DashboardContext";
-import { Line } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
-  Filler,
 } from "chart.js";
 import "./QuizTab.css";
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
-  Filler,
 );
+
+// ── Threshold reference lines plugin (same style as Self Assessment graph) ───
+const PASS = 75;
+const WARN = 35;
+
+const thresholdLinesPlugin = {
+  id: "thresholdLines",
+  beforeDraw(chart) {
+    const {
+      ctx,
+      chartArea: { top, bottom, left, right },
+      scales: { y },
+    } = chart;
+    const passY = y.getPixelForValue(PASS);
+    const warnY = y.getPixelForValue(WARN);
+
+    ctx.save();
+    ctx.fillStyle = "rgba(16,185,129,0.08)";
+    ctx.fillRect(left, top, right - left, passY - top);
+    ctx.fillStyle = "rgba(239,68,68,0.08)";
+    ctx.fillRect(left, warnY, right - left, bottom - warnY);
+    ctx.restore();
+
+    ctx.save();
+    ctx.setLineDash([6, 4]);
+
+    ctx.strokeStyle = "#10B981";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(left, passY);
+    ctx.lineTo(right, passY);
+    ctx.stroke();
+    ctx.fillStyle = "#10B981";
+    ctx.font = "bold 11px Inter, sans-serif";
+    ctx.fillText(`${PASS}%`, right + 6, passY + 4);
+
+    ctx.strokeStyle = "#EF4444";
+    ctx.beginPath();
+    ctx.moveTo(left, warnY);
+    ctx.lineTo(right, warnY);
+    ctx.stroke();
+    ctx.fillStyle = "#EF4444";
+    ctx.fillText(`${WARN}%`, right + 6, warnY + 4);
+    ctx.restore();
+  },
+};
 
 const QuizTab = () => {
   const { quizData } = useDashboard();
 
   const totalQuizzes = quizData?.total_quizzes || 0;
-  const quizScores = quizData?.quiz_scores || [];
+  const allQuizzes = quizData?.quiz_scores || [];
 
+  // ── Take only the last 2 exams ─────────────────────────────────────────────
+  const lastTwo = useMemo(() => {
+    // Sort by date descending, take first 2, then reverse to keep chronological
+    const sorted = [...allQuizzes].sort(
+      (a, b) => new Date(b.date ?? 0) - new Date(a.date ?? 0),
+    );
+    return sorted.slice(0, 2).reverse();
+  }, [allQuizzes]);
+
+  // ── Aggregate scores per subject across those 2 exams ────────────────────
+  // We average the percentage across the (up to 2) exams per subject
+  const { labels, values } = useMemo(() => {
+    const subjectMap = {}; // { subjectName: { total: number, count: number } }
+
+    lastTwo.forEach((quiz) => {
+      const subjects = quiz.subjects || [];
+      subjects.forEach(({ subject, score, max }) => {
+        if (!subject) return;
+        const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+        if (!subjectMap[subject]) subjectMap[subject] = { total: 0, count: 0 };
+        subjectMap[subject].total += pct;
+        subjectMap[subject].count += 1;
+      });
+    });
+
+    const lbs = Object.keys(subjectMap);
+    const vals = lbs.map((s) =>
+      Math.round(subjectMap[s].total / subjectMap[s].count),
+    );
+    return { labels: lbs, values: vals };
+  }, [lastTwo]);
+
+  // ── Chart config ──────────────────────────────────────────────────────────
   const chartData = {
-    labels: quizScores.map((q) => q.quiz_name),
+    labels,
     datasets: [
       {
-        label: "Quiz Score (%)",
-        data: quizScores.map((q) => q.percentage),
-        borderColor: "rgba(249, 115, 22, 1)",
-        backgroundColor: "rgba(249, 115, 22, 0.1)",
-        borderWidth: 3,
-        tension: 0.4,
-        pointRadius: 6,
-        pointHoverRadius: 8,
-        pointBackgroundColor: "rgba(249, 115, 22, 1)",
-        pointBorderColor: "#fff",
-        pointBorderWidth: 2,
-        fill: true,
+        label: "Score (%)",
+        data: values,
+        backgroundColor: values.map((v) =>
+          v >= PASS ? "rgba(16,185,129,0.85)" : "rgba(249,115,22,0.85)",
+        ),
+        borderRadius: 6,
+        borderSkipped: false,
       },
     ],
   };
@@ -55,49 +124,53 @@ const QuizTab = () => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: { padding: { right: 40 } }, // room for the % labels on the right
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
-        backgroundColor: "rgba(15, 23, 42, 0.95)",
+        backgroundColor: "rgba(15,23,42,0.95)",
         padding: 12,
         cornerRadius: 8,
-        titleFont: { size: 14, weight: "bold" },
-        bodyFont: { size: 13 },
-        displayColors: false,
+        callbacks: { label: (item) => ` ${item.raw}%` },
       },
     },
     scales: {
       y: {
         beginAtZero: true,
         max: 100,
-        grid: {
-          color: "rgba(0, 0, 0, 0.05)",
-        },
         ticks: {
+          callback: (v) => v + "%",
           color: "#6B7280",
           font: { weight: "600" },
-          callback: (value) => value + "%",
         },
-        border: {
-          display: false,
+        grid: { color: "rgba(0,0,0,0.05)" },
+        border: { display: false },
+        title: {
+          display: true,
+          text: "Score (%)",
+          color: "#6B7280",
+          font: { size: 12, weight: "600" },
         },
       },
       x: {
-        grid: {
-          display: false,
-        },
+        grid: { display: false },
         ticks: {
           color: "#6B7280",
           font: { weight: "500" },
+          maxRotation: 25,
+          // Truncate long subject names
+          callback(val) {
+            const label = this.getLabelForValue(val);
+            return label.length > 14 ? label.slice(0, 13) + "…" : label;
+          },
         },
-        border: {
-          display: false,
-        },
+        border: { display: false },
       },
     },
   };
+
+  // ── Exam label for the subtitle ────────────────────────────────────────────
+  const examLabels = lastTwo.map((q) => q.quiz_name).join(" & ");
 
   return (
     <div className="quiz-tab">
@@ -106,7 +179,8 @@ const QuizTab = () => {
           Quiz <span className="highlight-orange">Performance</span>
         </h2>
         <p className="tab-subtitle">
-          Quizzes generated for your remedial learning
+          Subject scores from last 2 exams
+          {examLabels ? ` (${examLabels})` : ""}
         </p>
       </div>
 
@@ -116,21 +190,25 @@ const QuizTab = () => {
         <div className="stat-label">TOTAL QUIZZES</div>
       </div>
 
-      {quizScores.length > 0 ? (
+      {labels.length > 0 ? (
         <div
           className="chart-container anim-fade-up"
           style={{ animationDelay: "0.2s" }}
         >
-          <h3 className="chart-title">Quiz Scores Over Time</h3>
+          <h3 className="chart-title">Subject Score Distribution</h3>
           <div className="chart-wrapper">
-            <Line data={chartData} options={chartOptions} />
+            <Bar
+              data={chartData}
+              options={chartOptions}
+              plugins={[thresholdLinesPlugin]}
+            />
           </div>
         </div>
       ) : (
         <div className="empty-state">
           <div className="empty-icon">📊</div>
           <h3>No quiz data available</h3>
-          <p>Quiz scores will appear here once you complete quizzes</p>
+          <p>Subject scores will appear once quizzes are completed</p>
         </div>
       )}
     </div>

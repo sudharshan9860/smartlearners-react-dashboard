@@ -33,11 +33,21 @@ const ExamTab = () => {
   const { examData } = useDashboard();
   const [selectedExamIndex, setSelectedExamIndex] = useState(null);
 
-  const results = examData?.results || [];
+  // ── Today filter ───────────────────────────────────────────────────────────
+  // Declare `results` ONCE — already filtered to today's date.
+  // Remove the old `const results = examData?.results || []` line entirely.
+  const todayStr = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+
+  const results = (examData?.results || []).filter((r) => {
+    const raw = r.exam_date ?? r.created_at ?? r.date ?? r.result_date ?? null;
+    if (!raw) return false;
+    return new Date(raw).toISOString().slice(0, 10) === todayStr;
+  });
+
   // Reverse to show oldest first in the trend chart
   const sortedResults = [...results].reverse();
 
-  // Create gradient for trend chart
+  // ── Chart helpers ──────────────────────────────────────────────────────────
   const getPointColor = (percentage) => {
     if (percentage >= 80) return "#10B981";
     if (percentage >= 60) return "#F97316";
@@ -75,14 +85,10 @@ const ExamTab = () => {
   const trendChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    interaction: {
-      mode: "nearest",
-      intersect: true,
-    },
+    interaction: { mode: "nearest", intersect: true },
     onClick: (event, elements) => {
       if (elements.length > 0) {
-        const index = elements[0].index;
-        setSelectedExamIndex(index);
+        setSelectedExamIndex(elements[0].index);
       }
     },
     onHover: (event, elements) => {
@@ -90,9 +96,7 @@ const ExamTab = () => {
         elements.length > 0 ? "pointer" : "default";
     },
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
         backgroundColor: "rgba(15, 23, 42, 0.95)",
         titleFont: { size: 13, weight: "700" },
@@ -119,35 +123,27 @@ const ExamTab = () => {
       y: {
         beginAtZero: true,
         max: 100,
-        grid: {
-          color: "rgba(0, 0, 0, 0.03)",
-        },
+        grid: { color: "rgba(0, 0, 0, 0.03)" },
         ticks: {
           color: "#94A3B8",
           font: { weight: "600" },
           callback: (v) => v + "%",
         },
-        border: {
-          display: false,
-        },
+        border: { display: false },
       },
       x: {
-        grid: {
-          display: false,
-        },
+        grid: { display: false },
         ticks: {
           color: "#94A3B8",
           font: { weight: "500", size: 11 },
           maxRotation: 25,
         },
-        border: {
-          display: false,
-        },
+        border: { display: false },
       },
     },
   };
 
-  // Grade distribution
+  // Grade distribution — built from today's filtered results
   const gradeCounts = {};
   results.forEach((r) => {
     gradeCounts[r.grade] = (gradeCounts[r.grade] || 0) + 1;
@@ -180,10 +176,7 @@ const ExamTab = () => {
         labels: {
           padding: 16,
           usePointStyle: true,
-          font: {
-            size: 12,
-            weight: "600",
-          },
+          font: { size: 12, weight: "600" },
         },
       },
       tooltip: {
@@ -194,9 +187,7 @@ const ExamTab = () => {
     },
   };
 
-  const handleClosePopup = () => {
-    setSelectedExamIndex(null);
-  };
+  const handleClosePopup = () => setSelectedExamIndex(null);
 
   return (
     <div className="exam-tab">
@@ -257,8 +248,8 @@ const ExamTab = () => {
       ) : (
         <div className="empty-state">
           <div className="empty-icon">🎓</div>
-          <h3>No exam results yet</h3>
-          <p>Exam results will appear here once you complete exams</p>
+          <h3>No exam results for today</h3>
+          <p>Exam corrections submitted today will appear here</p>
         </div>
       )}
     </div>
