@@ -571,7 +571,14 @@
     border-radius: 18px;
   }
   .qt-chart-wrap {
-    height: 280px;
+    height: 360px;
+    position: relative;
+    background: linear-gradient(
+      to bottom,
+      rgba(99, 102, 241, 0.02),
+      transparent 40%
+    );
+    border-radius: 16px;
   }
   .qt-card-head {
     flex-direction: column;

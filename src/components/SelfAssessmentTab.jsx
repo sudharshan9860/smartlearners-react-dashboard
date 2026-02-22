@@ -38,9 +38,21 @@ const CustomTooltip = ({ active, payload }) => {
         <p className="tooltip-title">
           CHAPTER {data.chapterNumber} - {CHAPTER_MAP[data.chapterNumber]}
         </p>
-        <p>Attempted: {data.attempted}</p>
-        <p style={{ color: "green" }}>Correct: {data.correct}</p>
-        <p style={{ color: "red" }}>Wrong: {data.wrong}</p>
+        <p>
+          <strong>Attempted: {data.attempted}</strong>
+        </p>
+        <p>Concepts Required: {data.conceptsRequired}</p>
+        <p>AI Solution: {data.aiSolution}</p>
+        <p>AI Correct: {data.aiCorrectTotal}</p>
+        <p style={{ color: "green", paddingLeft: 12 }}>
+          Correct: {data.aiCorrectRight}
+        </p>
+        <p style={{ color: "orange", paddingLeft: 12 }}>
+          Partially Correct: {data.aiCorrectPartial}
+        </p>
+        <p style={{ color: "red", paddingLeft: 12 }}>
+          Wrong: {data.aiCorrectWrong}
+        </p>
       </div>
     );
   }
@@ -126,40 +138,46 @@ const SelfAssessmentTab = () => {
 
       if (!chapterStats[chapter]) {
         chapterStats[chapter] = {
-          attempted: 0,
-          correct: 0,
-          wrong: 0,
+          conceptsRequired: 0,
+          aiSolution: 0,
+          aiCorrectTotal: 0,
+          aiCorrectRight: 0,
+          aiCorrectPartial: 0,
+          aiCorrectWrong: 0,
         };
       }
 
-      chapterStats[chapter].attempted += 1;
+      const type = item.answering_type?.toLowerCase();
 
-      if (item.max_marks && item.student_score === item.max_marks) {
-        chapterStats[chapter].correct += 1;
-      } else if (item.max_marks) {
-        chapterStats[chapter].wrong += 1;
+      if (type === "explain") {
+        chapterStats[chapter].conceptsRequired += 1;
+      } else if (type === "not solved") {
+        chapterStats[chapter].aiSolution += 1;
+      } else if (type === "correct") {
+        chapterStats[chapter].aiCorrectTotal += 1;
+        if (item.max_marks && item.student_score === item.max_marks) {
+          chapterStats[chapter].aiCorrectRight += 1;
+        } else if (item.max_marks && item.student_score >= item.max_marks / 2) {
+          chapterStats[chapter].aiCorrectPartial += 1;
+        } else {
+          chapterStats[chapter].aiCorrectWrong += 1;
+        }
       }
     });
 
-    return Object.keys(chapterStats).map((chapter) => ({
-      chapter: CHAPTER_MAP[chapter] || `Chapter ${chapter}`,
-      chapterNumber: Number(chapter),
-      attempted: chapterStats[chapter].attempted,
-      correct: chapterStats[chapter].correct,
-      wrong: chapterStats[chapter].wrong,
-    }));
+    return Object.keys(chapterStats).map((chapter) => {
+      const s = chapterStats[chapter];
+      return {
+        chapter: CHAPTER_MAP[chapter] || `Chapter ${chapter}`,
+        chapterNumber: Number(chapter),
+        attempted: s.conceptsRequired + s.aiSolution + s.aiCorrectTotal,
+        ...s,
+      };
+    });
   }, [allRows]);
 
   return (
     <div className="self-assessment-tab" ref={katexRef}>
-      <div className="tab-header">
-        <h2 className="tab-title">
-          Self Assessment &amp;{" "}
-          <span className="highlight-orange">Performance Summary</span>
-        </h2>
-        <p className="tab-subtitle">Your overall performance overview</p>
-      </div>
-
       <div className="stats-grid">
         <StatCard
           icon="📊"
@@ -196,8 +214,7 @@ const SelfAssessmentTab = () => {
             <XAxis dataKey="chapter" />
             <YAxis />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="correct" stackId="a" fill="#22c55e" />
-            <Bar dataKey="wrong" stackId="a" fill="#ef4444" />
+            <Bar dataKey="attempted" fill="#6366f1" name="Attempted" />
           </BarChart>
         </ResponsiveContainer>
       </div>

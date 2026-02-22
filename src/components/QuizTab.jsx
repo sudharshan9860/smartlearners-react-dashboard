@@ -21,10 +21,6 @@ ChartJS.register(
   Legend,
 );
 
-// ── Constants ──────────────────────────────────────────────────────────────────
-const PASS = 75;
-const WARN = 35;
-
 const SUBJECT_CONFIG = {
   PHYSICS: { label: "Physics", emoji: "⚛️", accent: "#6366F1" },
   MATHEMATICS: { label: "Mathematics", emoji: "📐", accent: "#8B5CF6" },
@@ -37,17 +33,25 @@ const gradientBarPlugin = {
     const { ctx, chartArea } = chart;
     if (!chartArea) return;
 
-    chart.data.datasets.forEach((dataset, i) => {
-      if (dataset.label !== "Latest Test") return;
+    chart.data.datasets.forEach((dataset) => {
       const gradient = ctx.createLinearGradient(
         0,
         chartArea.top,
         0,
         chartArea.bottom,
       );
-      gradient.addColorStop(0, "#6366F1");
-      gradient.addColorStop(1, "#4338CA");
-      dataset.backgroundColor = gradient;
+
+      if (dataset.label === "Latest Test") {
+        gradient.addColorStop(0, "#6366F1");
+        gradient.addColorStop(1, "#4338CA");
+        dataset.backgroundColor = gradient;
+      }
+
+      if (dataset.label === "Previous Test") {
+        gradient.addColorStop(0, "#64748B"); // darker slate
+        gradient.addColorStop(1, "#334155"); // deep slate
+        dataset.backgroundColor = gradient;
+      }
     });
   },
 };
@@ -131,18 +135,6 @@ const QuizTab = () => {
   const hasPrevData = prevValues.some((v) => v !== null);
   const totalQuizzes = filteredArray.length;
 
-  // ── Progress trend summary ─────────────────────────────────────────────────
-  const progressTrend = useMemo(() => {
-    const withDelta = chapterStats.filter((c) => c.delta !== null);
-    if (!withDelta.length) return null;
-    const improving = withDelta.filter((c) => c.delta > 0).length;
-    const total = withDelta.length;
-    const avgDelta = Math.round(
-      withDelta.reduce((s, c) => s + c.delta, 0) / total,
-    );
-    return { improving, total, avgDelta };
-  }, [chapterStats]);
-
   // ── AI Insights ────────────────────────────────────────────────────────────
   const insights = useMemo(() => {
     const withDelta = chapterStats.filter((c) => c.delta !== null);
@@ -172,17 +164,26 @@ const QuizTab = () => {
             {
               label: "Previous Test",
               data: prevValues,
-              backgroundColor: "#E5E7EB",
-              borderColor: "transparent",
-              borderWidth: 0,
-              borderRadius: {
-                topLeft: 16,
-                topRight: 16,
-                bottomLeft: 4,
-                bottomRight: 4,
+              backgroundColor: (context) => {
+                const { chart } = context;
+                const { ctx, chartArea } = chart;
+                if (!chartArea) return "#64748B";
+
+                const gradient = ctx.createLinearGradient(
+                  0,
+                  chartArea.top,
+                  0,
+                  chartArea.bottom,
+                );
+
+                gradient.addColorStop(0, "#64748B"); // slate 500
+                gradient.addColorStop(1, "#334155"); // slate 700
+
+                return gradient;
               },
+              borderRadius: 16,
               borderSkipped: false,
-              barPercentage: 0.65,
+              barPercentage: 0.6,
               categoryPercentage: 0.72,
             },
           ]
@@ -266,21 +267,24 @@ const QuizTab = () => {
         max: 100,
         ticks: {
           callback: (v) => v + "%",
-          color: "#CBD5E1",
+          color: "#0563e8",
           font: {
             family: "'Plus Jakarta Sans', system-ui",
-            size: 11,
-            weight: "600",
+            size: 12,
+            weight: "700",
           },
           stepSize: 25,
         },
-        grid: { color: "rgba(0,0,0,0.05)", lineWidth: 1 },
+        grid: {
+          color: "rgba(15,23,42,0.08)",
+          lineWidth: 1,
+        },
         border: { display: false },
       },
       x: {
         grid: { display: false },
         ticks: {
-          color: "#94A3B8",
+          color: "#171c24",
           font: {
             family: "'Plus Jakarta Sans', system-ui",
             size: 11,
@@ -304,21 +308,6 @@ const QuizTab = () => {
         accent: "#6366F1",
       }
     : null;
-
-  const scoreColor = (s) =>
-    s >= PASS ? "#10B981" : s >= WARN ? "#F59E0B" : "#F43F5E";
-
-  // ── Progress trend label ───────────────────────────────────────────────────
-  const trendLabel = progressTrend
-    ? progressTrend.improving === progressTrend.total
-      ? `▲ Improving across all ${progressTrend.total} chapters`
-      : progressTrend.improving > 0
-        ? `▲ Improving across ${progressTrend.improving}/${progressTrend.total} chapters · avg ${progressTrend.avgDelta >= 0 ? "+" : ""}${progressTrend.avgDelta}%`
-        : `▼ Declining — review your recent sessions`
-    : null;
-
-  const trendPositive =
-    progressTrend && progressTrend.improving > progressTrend.total / 2;
 
   return (
     <div className="qt-root">
@@ -361,7 +350,7 @@ const QuizTab = () => {
           <span className="qt-stat-chip__num">{chapterStats.length}</span>
           <span className="qt-stat-chip__lbl">Chapters</span>
         </div>
-        {insights.avgDelta !== null && (
+        {/* {insights.avgDelta !== null && (
           <div
             className={`qt-stat-chip ${insights.avgDelta >= 0 ? "qt-stat-chip--pos" : "qt-stat-chip--neg"}`}
           >
@@ -371,23 +360,13 @@ const QuizTab = () => {
             </span>
             <span className="qt-stat-chip__lbl">Avg Change</span>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* ── Main chart card ── */}
       {chapterStats.length > 0 ? (
         <>
           <div className="qt-card">
-            {/* Progress trend strip */}
-            {trendLabel && (
-              <div
-                className={`qt-trend-strip ${trendPositive ? "qt-trend-strip--up" : "qt-trend-strip--down"}`}
-              >
-                <span className="qt-trend-strip__dot" />
-                <span>{trendLabel}</span>
-              </div>
-            )}
-
             {/* Card header */}
             <div className="qt-card-head">
               <div>
@@ -435,12 +414,6 @@ const QuizTab = () => {
                         ? stat.chapter.slice(0, 15) + "…"
                         : stat.chapter}
                     </span>
-                    <span
-                      className="qt-pill__score"
-                      style={{ color: scoreColor(stat.latestScore) }}
-                    >
-                      {stat.latestScore}%
-                    </span>
                     {stat.delta !== null && (
                       <span className="qt-pill__delta">
                         {stat.delta > 0
@@ -459,13 +432,6 @@ const QuizTab = () => {
             {/* Bar chart — NO plugins that draw floating badges */}
             <div className="qt-chart-wrap">
               <Bar ref={chartRef} data={chartData} options={chartOptions} />
-            </div>
-
-            {/* Score refs row */}
-            <div className="qt-refs">
-              <span className="qt-ref qt-ref--pass">≥{PASS}% Pass</span>
-              <span className="qt-ref-dot" />
-              <span className="qt-ref qt-ref--warn">≥{WARN}% Average</span>
             </div>
           </div>
 
