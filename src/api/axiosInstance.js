@@ -39,7 +39,7 @@ const processQueue = (error, token = null) => {
 
 // ─── Axios Instance ────────────────────────────────────────────────────────────
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://autogen.aieducator.com",
 timeout: 30000,
   headers: { "Content-Type": "application/json" },
 });
