@@ -1,6 +1,9 @@
 export default async function handler(req, res) {
-  const targetPath = req.url.replace("/api/proxy", "");
-  const url = `https://autogen.aieducator.com${targetPath}`;
+  const path = Array.isArray(req.query.path)
+    ? req.query.path.join("/")
+    : req.query.path;
+
+  const url = `https://autogen.aieducator.com/api/${path}`;
 
   const response = await fetch(url, {
     method: req.method,
@@ -8,7 +11,10 @@ export default async function handler(req, res) {
       "Content-Type": req.headers["content-type"] || "application/json",
       Authorization: req.headers["authorization"] || "",
     },
-    body: req.method !== "GET" ? req.body : undefined,
+    body:
+      req.method !== "GET" && req.method !== "HEAD"
+        ? JSON.stringify(req.body)
+        : undefined,
   });
 
   const text = await response.text();

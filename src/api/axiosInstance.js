@@ -39,7 +39,8 @@ const processQueue = (error, token = null) => {
 
 // ─── Axios Instance ────────────────────────────────────────────────────────────
 const axiosInstance = axios.create({
-baseURL: "/api/proxy",  timeout: 30000,
+baseURL: "",
+timeout: 30000,
   headers: { "Content-Type": "application/json" },
 });
 
