@@ -13,10 +13,10 @@ const TopNav = ({ username }) => {
     <nav className="top-nav">
       <div className="nav-container">
         <div className="nav-brand">
-          <span className="brand-icon">S</span>
+          <span className="brand-icon">E</span>
           <span className="brand-name">
-            <span className="brand-smart">Smartlearners</span>
-            <span className="brand-dash"> Dashboard</span>
+            <span className="brand-smart">Elpro NELO</span>
+            <span className="brand-dash"> Smartlearners</span>
           </span>
         </div>
 

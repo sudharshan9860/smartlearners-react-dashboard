@@ -10,7 +10,7 @@ import LoadingOverlay from "../components/LoadingOverlay";
 import "./DashboardPage.css";
 
 const DashboardPage = () => {
-  const [activeTab, setActiveTab] = useState("self");
+  const [activeTab, setActiveTab] = useState("quiz");
   const { user } = useAuth();
   const { loadAllData, loading } = useDashboard();
 

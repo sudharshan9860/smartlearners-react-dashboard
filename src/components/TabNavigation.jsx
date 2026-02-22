@@ -4,19 +4,19 @@ import "./TabNavigation.css";
 const TabNavigation = ({ activeTab, onTabChange }) => {
   const tabs = [
     {
-      id: "self",
-      label: "Self Assessment",
-      icon: "📝",
-    },
-    {
       id: "quiz",
-      label: "Quiz Data",
+      label: "Exam Mode",
       icon: "📊",
     },
     {
       id: "exam",
-      label: "Exam Corrections",
+      label: "Exam Correction",
       icon: "🎓",
+    },
+    {
+      id: "self",
+      label: "Self Assessment",
+      icon: "📝",
     },
   ];
 
