@@ -1,20 +1,20 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "https://autogen.aieducator.com/api/:path*"
+      "src": "/api/(.*)",
+      "dest": "https://autogen.aieducator.com/api/$1"
     },
     {
-      "source": "/student-results/:path*",
-      "destination": "https://autogen.aieducator.com/student-results/:path*"
+      "src": "/student-results/(.*)",
+      "dest": "https://autogen.aieducator.com/student-results/$1"
     },
     {
-      "source": "/questions-evaluated/:path*",
-      "destination": "https://autogen.aieducator.com/questions-evaluated/:path*"
+      "src": "/questions-evaluated/(.*)",
+      "dest": "https://autogen.aieducator.com/questions-evaluated/$1"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
