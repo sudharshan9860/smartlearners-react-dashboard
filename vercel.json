@@ -13,6 +13,13 @@
       "dest": "https://autogen.aieducator.com/questions-evaluated/$1"
     },
     {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
