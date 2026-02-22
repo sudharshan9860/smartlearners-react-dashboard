@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://autogen.aieducator.com/api/:path*"
+    },
+    {
+      "source": "/student-results/:path*",
+      "destination": "https://autogen.aieducator.com/student-results/:path*"
+    },
+    {
+      "source": "/questions-evaluated/:path*",
+      "destination": "https://autogen.aieducator.com/questions-evaluated/:path*"
+    }
+  ]
+}
