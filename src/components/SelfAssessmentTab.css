@@ -1,85 +1,611 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SelfAssessmentTab — Premium SaaS Design System
+   All 15 improvements applied:
+   1. Color tokens  2. Typography  3. Soft cards  4. Filter pills
+   5. Progress bars  6. Whitespace  7. Row cards  8. BG tint
+   9. Saturation  10. Micro animations  11. Dividers  12. Header
+   13. Score blocks  14. Consistent radius  15. Reduced color areas
+═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── 1. DESIGN TOKENS ──────────────────────────────────────────────────────── */
 .self-assessment-tab {
+  /* Neutral */
+  --sa-bg: #f8fafc;
+  --sa-card: #ffffff;
+  --sa-border: #e5e7eb;
+  --sa-border-soft: rgba(0, 0, 0, 0.06);
+  --sa-text-primary: #111827;
+  --sa-text-secondary: #6b7280;
+  --sa-text-muted: #9ca3af;
+
+  /* Brand */
+  --sa-brand: #f97316; /* your orange — keep brand consistent */
+  --sa-brand-2: #ea580c;
+  --sa-indigo: #4f46e5;
+  --sa-indigo-2: #6366f1;
+
+  /* Semantic */
+  --sa-success: #16a34a;
+  --sa-warning: #f59e0b;
+  --sa-danger: #ef4444;
+
+  /* Radius */
+  --sa-r-sm: 8px;
+  --sa-r-md: 12px;
+  --sa-r-lg: 16px;
+  --sa-r-pill: 999px;
+
+  /* Shadow */
+  --sa-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --sa-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --sa-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.07);
+  --sa-shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.08);
+
+  /* 8. Soft background */
+  background: var(--sa-bg);
+  padding: 8px 0;
   animation: fadeUp 0.5s ease-out;
+
+  /* 2. Typography */
+  font-family:
+    "Inter",
+    "SF Pro Display",
+    -apple-system,
+    sans-serif;
+  letter-spacing: -0.01em;
+  color: var(--sa-text-primary);
 }
 
+/* ─── 10. MICRO ANIMATION SYSTEM ────────────────────────────────────────────── */
+.self-assessment-tab *,
+.self-assessment-tab *::before,
+.self-assessment-tab *::after {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    color 0.15s ease,
+    opacity 0.2s ease;
+}
+
+/* ─── TAB HEADER ────────────────────────────────────────────────────────────── */
 .tab-header {
-  margin-bottom: 32px;
+  margin-bottom: 40px; /* 6. Whitespace */
 }
 
+/* 2. Typography hierarchy */
 .tab-title {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--gray-900);
-  margin-bottom: 8px;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--sa-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 6px;
 }
 
 .highlight-orange {
-  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+  background: linear-gradient(135deg, var(--sa-brand), var(--sa-brand-2));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .tab-subtitle {
-  font-size: 1rem;
-  color: var(--gray-500);
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--sa-text-secondary);
+  line-height: 1.5;
 }
 
+/* ─── STATS GRID ────────────────────────────────────────────────────────────── */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 40px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px; /* 6. */
 }
 
+/* ─── 13. SCORE DISTRIBUTION — minimal stat cards ───────────────────────────── */
+.score-distribution {
+  background: var(--sa-card);
+  border: 1px solid var(--sa-border);
+  border-radius: var(--sa-r-lg);
+  padding: 24px; /* 3. */
+  margin-bottom: 48px; /* 6. */
+  box-shadow: var(--sa-shadow-xs); /* 3. */
+}
+
+.score-dist-title {
+  font-size: 0.875rem;
+  font-weight: 600; /* 2. */
+  color: var(--sa-text-primary);
+  margin-bottom: 20px;
+  letter-spacing: -0.01em;
+}
+
+.score-dist-sub {
+  font-weight: 400;
+  color: var(--sa-text-secondary);
+}
+
+/* 13. Upgrade bars to minimal stat cards */
+.score-dist-bars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dist-bar-col {
+  background: var(--sa-card);
+  border: 1px solid var(--sa-border);
+  border-radius: var(--sa-r-md);
+  padding: 16px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--sa-shadow-xs);
+}
+
+.dist-bar-col:hover {
+  box-shadow: var(--sa-shadow-sm);
+  transform: translateY(-2px); /* 7. lift */
+}
+
+.dist-bar-count {
+  font-size: 1.375rem; /* 13. bigger number */
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* 13. Replace the colored block with a minimal bar underneath */
+.dist-bar-track {
+  width: 100%;
+  height: 5px; /* 5. thin */
+  background: var(--sa-border);
+  border-radius: var(--sa-r-pill);
+  overflow: hidden;
+  display: block;
+}
+
+.dist-bar-fill {
+  height: 100%;
+  border-radius: var(--sa-r-pill);
+  transition: width 0.6s ease-in-out; /* 5. animated */
+}
+
+.dist-bar-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--sa-text-muted);
+  white-space: nowrap;
+}
+
+.score-dist-note {
+  font-size: 0.78rem;
+  color: var(--sa-text-secondary);
+  background: #f8fafc;
+  border: 1px solid var(--sa-border);
+  border-radius: var(--sa-r-sm);
+  padding: 10px 14px;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* ─── 6. SECTION HEADER ─────────────────────────────────────────────────────── */
 .section-header {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .section-header h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--gray-900);
+  font-size: 1.125rem; /* 2. */
+  font-weight: 600;
+  color: var(--sa-text-primary);
+  letter-spacing: -0.01em;
 }
 
+/* ─── 4. FILTER PILLS ───────────────────────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border: 1.5px solid var(--sa-border);
+  border-radius: var(--sa-r-pill);
+  background: var(--sa-card);
+  font-size: 0.813rem; /* 13px */
+  font-weight: 500;
+  color: var(--sa-text-secondary);
+  cursor: pointer;
+  letter-spacing: -0.005em;
+}
+
+.filter-btn:hover {
+  border-color: var(--sa-brand);
+  color: var(--sa-brand);
+  transform: translateY(-1px); /* 4. micro interaction */
+  box-shadow: var(--sa-shadow-sm);
+}
+
+/* 4. Active pill with brand shadow */
+.filter-btn-active {
+  background: var(--sa-brand) !important;
+  border-color: var(--sa-brand) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.28);
+}
+
+.filter-btn-active:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.35);
+}
+
+.filter-icon {
+  font-size: 0.82rem;
+  line-height: 1;
+}
+
+.filter-count {
+  background: rgba(0, 0, 0, 0.07);
+  border-radius: var(--sa-r-pill);
+  padding: 1px 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.filter-btn-active .filter-count {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ─── RESULTS META ──────────────────────────────────────────────────────────── */
+.results-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: var(--sa-text-muted);
+  margin-bottom: 20px;
+  font-weight: 400;
+}
+
+.results-meta strong {
+  color: var(--sa-text-primary);
+  font-weight: 600;
+}
+
+.clear-filter-btn {
+  background: none;
+  border: none;
+  color: var(--sa-brand);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  letter-spacing: -0.005em;
+}
+
+.clear-filter-btn:hover {
+  color: var(--sa-brand-2);
+  text-decoration: underline;
+}
+
+/* ─── GAP CARDS CONTAINER ───────────────────────────────────────────────────── */
 .gap-cards-container {
   display: grid;
-  gap: 20px;
+  gap: 16px;
 }
 
+/* ─── 3 + 6. SUBJECT SECTION ────────────────────────────────────────────────── */
+.subject-section {
+  background: var(--sa-card);
+  border: 1px solid var(--sa-border);
+  border-radius: var(--sa-r-lg);
+  box-shadow: var(--sa-shadow-xs);
+  overflow: hidden;
+}
+
+.subject-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #fafafa;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  /* 11. subtle divider */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.subject-header:hover {
+  background: #f5f5f5;
+}
+
+.subject-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.subject-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sa-brand);
+  flex-shrink: 0;
+}
+
+/* 2. Typography */
+.subject-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--sa-text-primary);
+  text-transform: capitalize;
+  letter-spacing: -0.01em;
+}
+
+.subject-meta {
+  font-size: 0.775rem;
+  font-weight: 400;
+  color: var(--sa-text-muted);
+  white-space: nowrap;
+}
+
+.subject-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.subject-avg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 5. Thin gradient progress bar */
+.subject-avg-track {
+  width: 80px;
+  height: 5px;
+  background: var(--sa-border);
+  border-radius: var(--sa-r-pill);
+  overflow: hidden;
+}
+
+.subject-avg-fill {
+  height: 100%;
+  border-radius: var(--sa-r-pill);
+  transition: width 0.6s ease-in-out;
+}
+
+.subject-avg-pct {
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 34px;
+  text-align: right;
+  letter-spacing: -0.01em;
+}
+
+.chevron {
+  font-size: 0.875rem;
+  color: var(--sa-text-muted);
+  transition: transform 0.25s ease;
+  display: inline-block;
+  user-select: none;
+}
+
+.chevron-open {
+  transform: rotate(0deg);
+}
+
+.chevron:not(.chevron-open) {
+  transform: rotate(-90deg);
+}
+
+/* 6. breathing room */
+.subject-body {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+/* ─── CHAPTER SECTION ───────────────────────────────────────────────────────── */
+.chapter-section {
+  background: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: var(--sa-r-md);
+  overflow: hidden;
+}
+
+.chapter-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--sa-card);
+  /* 11. very light divider */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+/* 2. Typography */
+.chapter-label {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--sa-text-primary);
+  letter-spacing: -0.005em;
+}
+
+.chapter-meta {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--sa-text-muted);
+}
+
+.chapter-cards {
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+/* ─── 7. GAP CARD OVERRIDES (GapCard.jsx classes) ───────────────────────────── */
+/* These override whatever GapCard renders to remove the heavy red bar */
+
+/* The progress bar inside GapCard */
+.gap-card {
+  background: var(--sa-card);
+  border: 1px solid var(--sa-border);
+  border-radius: var(--sa-r-md);
+  padding: 18px 20px;
+  box-shadow: var(--sa-shadow-xs);
+  transition: all 0.2s ease;
+}
+
+.gap-card:hover {
+  box-shadow: var(--sa-shadow-hover);
+  transform: translateY(-2px); /* 7. subtle lift */
+  border-color: #d1d5db;
+}
+
+/* 5. Fix the heavy red bar — make it thin + rounded */
+.gap-card .progress-bar,
+.gap-card [class*="progress"],
+.gap-card [class*="bar"] {
+  height: 5px !important;
+  border-radius: var(--sa-r-pill) !important;
+  background: var(--sa-border) !important;
+  overflow: hidden;
+}
+
+.gap-card .progress-fill,
+.gap-card [class*="progress-fill"],
+.gap-card [class*="bar-fill"] {
+  height: 5px !important;
+  border-radius: var(--sa-r-pill) !important;
+  background: linear-gradient(
+    90deg,
+    var(--sa-indigo-2),
+    var(--sa-indigo)
+  ) !important;
+  transition: width 0.6s ease-in-out !important;
+}
+
+/* Remove raw "100% width red bar" look */
+.gap-card [style*="background: red"],
+.gap-card [style*="background-color: red"],
+.gap-card [style*="background:#ef4444"],
+.gap-card [style*="background: #ef4444"] {
+  height: 5px !important;
+  border-radius: var(--sa-r-pill) !important;
+}
+
+/* Score display: "5/5 (%)" → hide the stray "(%) text via parent */
+.gap-card .score-value,
+.gap-card [class*="score"] {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--sa-text-primary);
+}
+
+/* 15. Reduce color saturation in subject label inside card */
+.gap-card [class*="subject-label"],
+.gap-card h4,
+.gap-card .card-subject {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sa-brand);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Column headers (SCORE / TIME / TIME RATING / TYPE) */
+.gap-card .col-label,
+.gap-card [class*="col-header"],
+.gap-card th {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--sa-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ─── EMPTY STATE ────────────────────────────────────────────────────────────── */
 .empty-state {
   text-align: center;
-  padding: 80px 20px;
-  background: var(--white);
-  border-radius: var(--radius-lg);
-  border: 2px dashed var(--gray-300);
+  padding: 72px 20px;
+  background: var(--sa-card);
+  border-radius: var(--sa-r-lg);
+  border: 2px dashed var(--sa-border);
+  box-shadow: var(--sa-shadow-xs);
 }
 
 .empty-icon {
-  font-size: 4rem;
-  margin-bottom: 16px;
-  opacity: 0.5;
+  font-size: 3rem;
+  margin-bottom: 14px;
+  opacity: 0.4;
 }
 
 .empty-state h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--gray-700);
-  margin-bottom: 8px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--sa-text-primary);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
 }
 
 .empty-state p {
-  font-size: 1rem;
-  color: var(--gray-500);
+  font-size: 0.875rem;
+  color: var(--sa-text-secondary);
 }
 
+/* ─── RESPONSIVE ────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .tab-title {
-    font-size: 1.5rem;
+    font-size: 1.375rem;
   }
 
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
+  }
+
+  .score-dist-bars {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .dist-bar-col {
+    padding: 12px 8px 10px;
+  }
+
+  .dist-bar-count {
+    font-size: 1.1rem;
+  }
+
+  .filter-bar {
+    gap: 6px;
+  }
+
+  .filter-btn {
+    padding: 5px 10px;
+    font-size: 0.775rem;
+  }
+
+  .subject-avg,
+  .subject-meta {
+    display: none;
   }
 }

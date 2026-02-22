@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useDashboard } from "../contexts/DashboardContext";
 import { Bar } from "react-chartjs-2";
 import {
@@ -21,102 +21,188 @@ ChartJS.register(
   Legend,
 );
 
-// ── Threshold reference lines plugin (same style as Self Assessment graph) ───
+// ── Constants ──────────────────────────────────────────────────────────────────
 const PASS = 75;
 const WARN = 35;
 
-const thresholdLinesPlugin = {
-  id: "thresholdLines",
-  beforeDraw(chart) {
-    const {
-      ctx,
-      chartArea: { top, bottom, left, right },
-      scales: { y },
-    } = chart;
-    const passY = y.getPixelForValue(PASS);
-    const warnY = y.getPixelForValue(WARN);
+const SUBJECT_CONFIG = {
+  PHYSICS: { label: "Physics", emoji: "⚛️", accent: "#6366F1" },
+  MATHEMATICS: { label: "Mathematics", emoji: "📐", accent: "#8B5CF6" },
+};
 
-    ctx.save();
-    ctx.fillStyle = "rgba(16,185,129,0.08)";
-    ctx.fillRect(left, top, right - left, passY - top);
-    ctx.fillStyle = "rgba(239,68,68,0.08)";
-    ctx.fillRect(left, warnY, right - left, bottom - warnY);
-    ctx.restore();
+// ── Gradient bar plugin — creates indigo gradient on latest bars ───────────────
+const gradientBarPlugin = {
+  id: "gradientBars",
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea } = chart;
+    if (!chartArea) return;
 
-    ctx.save();
-    ctx.setLineDash([6, 4]);
-
-    ctx.strokeStyle = "#10B981";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(left, passY);
-    ctx.lineTo(right, passY);
-    ctx.stroke();
-    ctx.fillStyle = "#10B981";
-    ctx.font = "bold 11px Inter, sans-serif";
-    ctx.fillText(`${PASS}%`, right + 6, passY + 4);
-
-    ctx.strokeStyle = "#EF4444";
-    ctx.beginPath();
-    ctx.moveTo(left, warnY);
-    ctx.lineTo(right, warnY);
-    ctx.stroke();
-    ctx.fillStyle = "#EF4444";
-    ctx.fillText(`${WARN}%`, right + 6, warnY + 4);
-    ctx.restore();
+    chart.data.datasets.forEach((dataset, i) => {
+      if (dataset.label !== "Latest Test") return;
+      const gradient = ctx.createLinearGradient(
+        0,
+        chartArea.top,
+        0,
+        chartArea.bottom,
+      );
+      gradient.addColorStop(0, "#6366F1");
+      gradient.addColorStop(1, "#4338CA");
+      dataset.backgroundColor = gradient;
+    });
   },
 };
 
+ChartJS.register(gradientBarPlugin);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const QuizTab = () => {
   const { quizData } = useDashboard();
+  const chartRef = useRef(null);
 
-  const totalQuizzes = quizData?.total_quizzes || 0;
-  const allQuizzes = quizData?.quiz_scores || [];
+  const [activeSubject, setActiveSubject] = useState(null);
 
-  // ── Take only the last 2 exams ─────────────────────────────────────────────
-  const lastTwo = useMemo(() => {
-    // Sort by date descending, take first 2, then reverse to keep chronological
-    const sorted = [...allQuizzes].sort(
-      (a, b) => new Date(b.date ?? 0) - new Date(a.date ?? 0),
-    );
-    return sorted.slice(0, 2).reverse();
-  }, [allQuizzes]);
+  const rawQuizArray = useMemo(
+    () => (Array.isArray(quizData) ? quizData : []),
+    [quizData],
+  );
 
-  // ── Aggregate scores per subject across those 2 exams ────────────────────
-  // We average the percentage across the (up to 2) exams per subject
-  const { labels, values } = useMemo(() => {
-    const subjectMap = {}; // { subjectName: { total: number, count: number } }
-
-    lastTwo.forEach((quiz) => {
-      const subjects = quiz.subjects || [];
-      subjects.forEach(({ subject, score, max }) => {
-        if (!subject) return;
-        const pct = max > 0 ? Math.round((score / max) * 100) : 0;
-        if (!subjectMap[subject]) subjectMap[subject] = { total: 0, count: 0 };
-        subjectMap[subject].total += pct;
-        subjectMap[subject].count += 1;
-      });
+  const availableSubjects = useMemo(() => {
+    const s = new Set();
+    rawQuizArray.forEach((q) => {
+      if (q?.graph_data?.subject) s.add(q.graph_data.subject);
     });
+    return Array.from(s).sort();
+  }, [rawQuizArray]);
 
-    const lbs = Object.keys(subjectMap);
-    const vals = lbs.map((s) =>
-      Math.round(subjectMap[s].total / subjectMap[s].count),
+  useEffect(() => {
+    if (availableSubjects.length > 0 && activeSubject === null) {
+      setActiveSubject(availableSubjects[0]);
+    }
+  }, [availableSubjects, activeSubject]);
+
+  const filteredArray = useMemo(() => {
+    if (!activeSubject) return rawQuizArray;
+    return rawQuizArray.filter((q) => q?.graph_data?.subject === activeSubject);
+  }, [rawQuizArray, activeSubject]);
+
+  const chapterHistory = useMemo(() => {
+    const map = {};
+    filteredArray.forEach((quiz) => {
+      (quiz?.graph_data?.chapter_breakdown || []).forEach(
+        ({ chapter, score_pct }) => {
+          if (!chapter) return;
+          if (!map[chapter]) map[chapter] = [];
+          map[chapter].push({
+            score_pct: score_pct ?? 0,
+            date: quiz.created_at ?? "",
+            name: quiz.name ?? chapter,
+          });
+        },
+      );
+    });
+    Object.values(map).forEach((arr) =>
+      arr.sort((a, b) => new Date(a.date) - new Date(b.date)),
     );
-    return { labels: lbs, values: vals };
-  }, [lastTwo]);
+    return map;
+  }, [filteredArray]);
 
-  // ── Chart config ──────────────────────────────────────────────────────────
+  const chapterStats = useMemo(() => {
+    return Object.entries(chapterHistory).map(([chapter, attempts]) => {
+      const latest = attempts[attempts.length - 1];
+      const previous =
+        attempts.length > 1 ? attempts[attempts.length - 2] : null;
+      const delta = previous ? latest.score_pct - previous.score_pct : null;
+      return {
+        chapter,
+        latestScore: latest.score_pct,
+        prevScore: previous?.score_pct ?? null,
+        delta,
+        totalAttempts: attempts.length,
+        latestName: latest.name,
+      };
+    });
+  }, [chapterHistory]);
+
+  const labels = chapterStats.map((c) => c.chapter);
+  const latestValues = chapterStats.map((c) => c.latestScore);
+  const prevValues = chapterStats.map((c) => c.prevScore);
+  const deltas = chapterStats.map((c) => c.delta);
+  const hasPrevData = prevValues.some((v) => v !== null);
+  const totalQuizzes = filteredArray.length;
+
+  // ── Progress trend summary ─────────────────────────────────────────────────
+  const progressTrend = useMemo(() => {
+    const withDelta = chapterStats.filter((c) => c.delta !== null);
+    if (!withDelta.length) return null;
+    const improving = withDelta.filter((c) => c.delta > 0).length;
+    const total = withDelta.length;
+    const avgDelta = Math.round(
+      withDelta.reduce((s, c) => s + c.delta, 0) / total,
+    );
+    return { improving, total, avgDelta };
+  }, [chapterStats]);
+
+  // ── AI Insights ────────────────────────────────────────────────────────────
+  const insights = useMemo(() => {
+    const withDelta = chapterStats.filter((c) => c.delta !== null);
+    const bestChapter = withDelta.length
+      ? withDelta.reduce((a, b) => (b.delta > a.delta ? b : a), withDelta[0])
+      : null;
+    const avgDelta = withDelta.length
+      ? Math.round(
+          withDelta.reduce((s, c) => s + c.delta, 0) / withDelta.length,
+        )
+      : null;
+    const focusChapter = chapterStats.length
+      ? chapterStats.reduce(
+          (a, b) => (b.latestScore < a.latestScore ? b : a),
+          chapterStats[0],
+        )
+      : null;
+    return { bestChapter, avgDelta, focusChapter };
+  }, [chapterStats]);
+
+  // ── Chart data ─────────────────────────────────────────────────────────────
   const chartData = {
     labels,
     datasets: [
+      ...(hasPrevData
+        ? [
+            {
+              label: "Previous Test",
+              data: prevValues,
+              backgroundColor: "#E5E7EB",
+              borderColor: "transparent",
+              borderWidth: 0,
+              borderRadius: {
+                topLeft: 16,
+                topRight: 16,
+                bottomLeft: 4,
+                bottomRight: 4,
+              },
+              borderSkipped: false,
+              barPercentage: 0.65,
+              categoryPercentage: 0.72,
+            },
+          ]
+        : []),
       {
-        label: "Score (%)",
-        data: values,
-        backgroundColor: values.map((v) =>
-          v >= PASS ? "rgba(16,185,129,0.85)" : "rgba(249,115,22,0.85)",
-        ),
-        borderRadius: 6,
+        label: "Latest Test",
+        data: latestValues,
+        // gradient applied by plugin
+        backgroundColor: "#6366F1",
+        borderColor: "transparent",
+        borderWidth: 0,
+        borderRadius: {
+          topLeft: 16,
+          topRight: 16,
+          bottomLeft: 4,
+          bottomRight: 4,
+        },
         borderSkipped: false,
+        barPercentage: 0.65,
+        categoryPercentage: 0.72,
       },
     ],
   };
@@ -124,14 +210,54 @@ const QuizTab = () => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    layout: { padding: { right: 40 } }, // room for the % labels on the right
+    layout: { padding: { right: 16, top: 20, left: 4, bottom: 4 } },
+    animation: {
+      duration: 800,
+      easing: "easeOutQuart",
+      delay: (ctx) => {
+        // Latest bars animate 250ms after previous bars
+        if (hasPrevData && ctx.datasetIndex === 1) return 250;
+        return 0;
+      },
+    },
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: "rgba(15,23,42,0.95)",
-        padding: 12,
-        cornerRadius: 8,
-        callbacks: { label: (item) => ` ${item.raw}%` },
+        backgroundColor: "rgba(15,23,42,0.97)",
+        padding: { top: 14, bottom: 14, left: 16, right: 16 },
+        cornerRadius: 14,
+        titleFont: {
+          family: "'Plus Jakarta Sans', system-ui",
+          size: 13,
+          weight: "800",
+        },
+        bodyFont: {
+          family: "'Plus Jakarta Sans', system-ui",
+          size: 12,
+          weight: "500",
+        },
+        bodySpacing: 5,
+        borderColor: "rgba(255,255,255,0.06)",
+        borderWidth: 1,
+        callbacks: {
+          title: (items) => chapterStats[items[0].dataIndex]?.chapter || "",
+          label: () => null,
+          afterBody: (items) => {
+            const stat = chapterStats[items[0].dataIndex];
+            if (!stat) return [];
+            const lines = [];
+            if (stat.prevScore !== null)
+              lines.push(`  Previous    ${stat.prevScore}%`);
+            lines.push(`  Latest      ${stat.latestScore}%`);
+            if (stat.delta !== null) {
+              const sign = stat.delta > 0 ? "+" : "";
+              const arrow = stat.delta > 0 ? "▲" : stat.delta < 0 ? "▼" : "=";
+              lines.push(`  Change      ${arrow} ${sign}${stat.delta}%`);
+            }
+            lines.push(`  Attempts   ${stat.totalAttempts}`);
+            return lines;
+          },
+        },
       },
     },
     scales: {
@@ -140,28 +266,30 @@ const QuizTab = () => {
         max: 100,
         ticks: {
           callback: (v) => v + "%",
-          color: "#6B7280",
-          font: { weight: "600" },
+          color: "#CBD5E1",
+          font: {
+            family: "'Plus Jakarta Sans', system-ui",
+            size: 11,
+            weight: "600",
+          },
+          stepSize: 25,
         },
-        grid: { color: "rgba(0,0,0,0.05)" },
+        grid: { color: "rgba(0,0,0,0.05)", lineWidth: 1 },
         border: { display: false },
-        title: {
-          display: true,
-          text: "Score (%)",
-          color: "#6B7280",
-          font: { size: 12, weight: "600" },
-        },
       },
       x: {
         grid: { display: false },
         ticks: {
-          color: "#6B7280",
-          font: { weight: "500" },
-          maxRotation: 25,
-          // Truncate long subject names
+          color: "#94A3B8",
+          font: {
+            family: "'Plus Jakarta Sans', system-ui",
+            size: 11,
+            weight: "600",
+          },
+          maxRotation: 20,
           callback(val) {
-            const label = this.getLabelForValue(val);
-            return label.length > 14 ? label.slice(0, 13) + "…" : label;
+            const lbl = this.getLabelForValue(val);
+            return lbl.length > 12 ? lbl.slice(0, 11) + "…" : lbl;
           },
         },
         border: { display: false },
@@ -169,46 +297,253 @@ const QuizTab = () => {
     },
   };
 
-  // ── Exam label for the subtitle ────────────────────────────────────────────
-  const examLabels = lastTwo.map((q) => q.quiz_name).join(" & ");
+  const activeConfig = activeSubject
+    ? SUBJECT_CONFIG[activeSubject] || {
+        label: activeSubject,
+        emoji: "📖",
+        accent: "#6366F1",
+      }
+    : null;
+
+  const scoreColor = (s) =>
+    s >= PASS ? "#10B981" : s >= WARN ? "#F59E0B" : "#F43F5E";
+
+  // ── Progress trend label ───────────────────────────────────────────────────
+  const trendLabel = progressTrend
+    ? progressTrend.improving === progressTrend.total
+      ? `▲ Improving across all ${progressTrend.total} chapters`
+      : progressTrend.improving > 0
+        ? `▲ Improving across ${progressTrend.improving}/${progressTrend.total} chapters · avg ${progressTrend.avgDelta >= 0 ? "+" : ""}${progressTrend.avgDelta}%`
+        : `▼ Declining — review your recent sessions`
+    : null;
+
+  const trendPositive =
+    progressTrend && progressTrend.improving > progressTrend.total / 2;
 
   return (
-    <div className="quiz-tab">
-      <div className="tab-header">
-        <h2 className="tab-title">
-          Quiz <span className="highlight-orange">Performance</span>
-        </h2>
-        <p className="tab-subtitle">
-          Subject scores from last 2 exams
-          {examLabels ? ` (${examLabels})` : ""}
-        </p>
-      </div>
-
-      <div className="quiz-stat-card anim-fade-up">
-        <div className="stat-icon">📊</div>
-        <div className="stat-value">{totalQuizzes}</div>
-        <div className="stat-label">TOTAL QUIZZES</div>
-      </div>
-
-      {labels.length > 0 ? (
-        <div
-          className="chart-container anim-fade-up"
-          style={{ animationDelay: "0.2s" }}
-        >
-          <h3 className="chart-title">Subject Score Distribution</h3>
-          <div className="chart-wrapper">
-            <Bar
-              data={chartData}
-              options={chartOptions}
-              plugins={[thresholdLinesPlugin]}
-            />
-          </div>
+    <div className="qt-root">
+      {/* ── Subject Filter Tabs ── */}
+      {availableSubjects.length > 0 && (
+        <div className="qt-subject-row">
+          {availableSubjects.map((subj) => {
+            const cfg = SUBJECT_CONFIG[subj] || {
+              label: subj,
+              emoji: "📖",
+              accent: "#6366F1",
+            };
+            const count = rawQuizArray.filter(
+              (q) => q?.graph_data?.subject === subj,
+            ).length;
+            const isActive = activeSubject === subj;
+            return (
+              <button
+                key={subj}
+                className={`qt-subject-btn ${isActive ? "qt-subject-btn--on" : ""}`}
+                style={isActive ? { "--sa": cfg.accent } : {}}
+                onClick={() => setActiveSubject(subj)}
+              >
+                <span className="qt-subj-emoji">{cfg.emoji}</span>
+                <span className="qt-subj-label">{cfg.label}</span>
+                <span className="qt-subj-badge">{count}</span>
+              </button>
+            );
+          })}
         </div>
+      )}
+
+      {/* ── Stats strip ── */}
+      <div className="qt-stats-strip">
+        <div className="qt-stat-chip">
+          <span className="qt-stat-chip__num">{totalQuizzes}</span>
+          <span className="qt-stat-chip__lbl">Quizzes</span>
+        </div>
+        <div className="qt-stat-chip">
+          <span className="qt-stat-chip__num">{chapterStats.length}</span>
+          <span className="qt-stat-chip__lbl">Chapters</span>
+        </div>
+        {insights.avgDelta !== null && (
+          <div
+            className={`qt-stat-chip ${insights.avgDelta >= 0 ? "qt-stat-chip--pos" : "qt-stat-chip--neg"}`}
+          >
+            <span className="qt-stat-chip__num">
+              {insights.avgDelta >= 0 ? "+" : ""}
+              {insights.avgDelta}%
+            </span>
+            <span className="qt-stat-chip__lbl">Avg Change</span>
+          </div>
+        )}
+      </div>
+
+      {/* ── Main chart card ── */}
+      {chapterStats.length > 0 ? (
+        <>
+          <div className="qt-card">
+            {/* Progress trend strip */}
+            {trendLabel && (
+              <div
+                className={`qt-trend-strip ${trendPositive ? "qt-trend-strip--up" : "qt-trend-strip--down"}`}
+              >
+                <span className="qt-trend-strip__dot" />
+                <span>{trendLabel}</span>
+              </div>
+            )}
+
+            {/* Card header */}
+            <div className="qt-card-head">
+              <div>
+                <p className="qt-card-eyebrow">
+                  {activeConfig?.emoji} {activeConfig?.label}
+                </p>
+                <h3 className="qt-card-title">Chapter Performance</h3>
+                <p className="qt-card-sub">
+                  {hasPrevData
+                    ? "Last 2 attempts per chapter — hover for details"
+                    : "Latest attempt per chapter — hover for details"}
+                </p>
+              </div>
+
+              {/* Legend */}
+              <div className="qt-legend">
+                {hasPrevData && (
+                  <div className="qt-legend-item">
+                    <span className="qt-legend-dot qt-legend-dot--prev" />
+                    <span>Previous</span>
+                  </div>
+                )}
+                <div className="qt-legend-item">
+                  <span className="qt-legend-dot qt-legend-dot--latest" />
+                  <span>Latest</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Chapter summary pills — delta inline */}
+            <div className="qt-pills-row">
+              {chapterStats.map((stat) => {
+                const trendCls =
+                  stat.delta === null
+                    ? "qt-pill--first"
+                    : stat.delta > 0
+                      ? "qt-pill--up"
+                      : stat.delta < 0
+                        ? "qt-pill--down"
+                        : "qt-pill--same";
+                return (
+                  <div key={stat.chapter} className={`qt-pill ${trendCls}`}>
+                    <span className="qt-pill__name" title={stat.chapter}>
+                      {stat.chapter.length > 16
+                        ? stat.chapter.slice(0, 15) + "…"
+                        : stat.chapter}
+                    </span>
+                    <span
+                      className="qt-pill__score"
+                      style={{ color: scoreColor(stat.latestScore) }}
+                    >
+                      {stat.latestScore}%
+                    </span>
+                    {stat.delta !== null && (
+                      <span className="qt-pill__delta">
+                        {stat.delta > 0
+                          ? `▲ +${stat.delta}%`
+                          : stat.delta < 0
+                            ? `▼ ${stat.delta}%`
+                            : "="}
+                      </span>
+                    )}
+                    <span className="qt-pill__cnt">{stat.totalAttempts}×</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Bar chart — NO plugins that draw floating badges */}
+            <div className="qt-chart-wrap">
+              <Bar ref={chartRef} data={chartData} options={chartOptions} />
+            </div>
+
+            {/* Score refs row */}
+            <div className="qt-refs">
+              <span className="qt-ref qt-ref--pass">≥{PASS}% Pass</span>
+              <span className="qt-ref-dot" />
+              <span className="qt-ref qt-ref--warn">≥{WARN}% Average</span>
+            </div>
+          </div>
+
+          {/* ── AI Insight card ── */}
+          <div className="qt-insight-card">
+            <div className="qt-insight-header">
+              <span className="qt-insight-pill">✦ AI Insights</span>
+              <p className="qt-insight-heading">Performance Analysis</p>
+            </div>
+
+            <div className="qt-insight-grid">
+              {insights.bestChapter && (
+                <div className="qt-insight-item qt-insight-item--green">
+                  <span className="qt-insight-icon">🚀</span>
+                  <div>
+                    <p className="qt-insight-label">Strongest Growth</p>
+                    <p className="qt-insight-val">
+                      {insights.bestChapter.chapter.length > 20
+                        ? insights.bestChapter.chapter.slice(0, 19) + "…"
+                        : insights.bestChapter.chapter}
+                      <span className="qt-insight-badge qt-insight-badge--green">
+                        +{insights.bestChapter.delta}%
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {insights.avgDelta !== null && (
+                <div
+                  className={`qt-insight-item ${insights.avgDelta >= 0 ? "qt-insight-item--indigo" : "qt-insight-item--red"}`}
+                >
+                  <span className="qt-insight-icon">📈</span>
+                  <div>
+                    <p className="qt-insight-label">Overall Trend</p>
+                    <p className="qt-insight-val">
+                      {insights.avgDelta >= 0
+                        ? "Improving overall"
+                        : "Needs attention"}
+                      <span
+                        className={`qt-insight-badge ${insights.avgDelta >= 0 ? "qt-insight-badge--indigo" : "qt-insight-badge--red"}`}
+                      >
+                        {insights.avgDelta >= 0 ? "+" : ""}
+                        {insights.avgDelta}% avg
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {insights.focusChapter && (
+                <div className="qt-insight-item qt-insight-item--amber">
+                  <span className="qt-insight-icon">⚡</span>
+                  <div>
+                    <p className="qt-insight-label">Focus Next</p>
+                    <p className="qt-insight-val">
+                      {insights.focusChapter.chapter.length > 20
+                        ? insights.focusChapter.chapter.slice(0, 19) + "…"
+                        : insights.focusChapter.chapter}
+                      <span className="qt-insight-badge qt-insight-badge--amber">
+                        {insights.focusChapter.latestScore}%
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
       ) : (
-        <div className="empty-state">
-          <div className="empty-icon">📊</div>
-          <h3>No quiz data available</h3>
-          <p>Subject scores will appear once quizzes are completed</p>
+        <div className="qt-empty">
+          <div className="qt-empty-orb" />
+          <p className="qt-empty-title">No data yet</p>
+          <p className="qt-empty-sub">
+            {activeSubject
+              ? `Complete a ${activeConfig?.label || activeSubject} quiz to see your results`
+              : "Select a subject to get started"}
+          </p>
         </div>
       )}
     </div>
