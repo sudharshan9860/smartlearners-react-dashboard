@@ -1,27 +1,3 @@
 {
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "https://autogen.aieducator.com/api/$1"
-    },
-    {
-      "src": "/student-results/(.*)",
-      "dest": "https://autogen.aieducator.com/student-results/$1"
-    },
-    {
-      "src": "/questions-evaluated/(.*)",
-      "dest": "https://autogen.aieducator.com/questions-evaluated/$1"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  "rewrites": [{ "source": "/((?!api).*)", "destination": "/index.html" }]
 }
