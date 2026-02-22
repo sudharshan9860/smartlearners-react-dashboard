@@ -11,6 +11,10 @@
     {
       "source": "/questions-evaluated/:path*",
       "destination": "https://autogen.aieducator.com/questions-evaluated/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
