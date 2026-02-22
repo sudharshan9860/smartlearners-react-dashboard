@@ -8,9 +8,14 @@ export const authAPI = {
    * @returns {Promise<{access: string, refresh: string}>}
    */
   async login(username, password) {
-    const response = await axiosInstance.post("/api/token/", {
-      username,
-      password,
+    const params = new URLSearchParams();
+    params.append("username", username);
+    params.append("password", password);
+
+    const response = await axiosInstance.post("/api/token/", params, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     });
 
     const { access, refresh } = response.data;
