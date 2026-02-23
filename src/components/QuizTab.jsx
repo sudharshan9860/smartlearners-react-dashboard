@@ -21,49 +21,74 @@ ChartJS.register(
   Legend,
 );
 
+// ── Constants ─────────────────────────────────────────────────────────────────
 const SUBJECT_CONFIG = {
-  PHYSICS: { label: "Physics", emoji: "⚛️", accent: "#6366F1" },
-  MATHEMATICS: { label: "Mathematics", emoji: "📐", accent: "#8B5CF6" },
+  PHYSICS: { label: "Physics", emoji: "⚛️", accent: "#4F46E5" },
+  MATHEMATICS: { label: "Mathematics", emoji: "📐", accent: "#7C3AED" },
+  CHEMISTRY: { label: "Chemistry", emoji: "🧪", accent: "#0891B2" },
+  BIOLOGY: { label: "Biology", emoji: "🌿", accent: "#059669" },
 };
 
-// ── Gradient bar plugin — creates indigo gradient on latest bars ───────────────
-const gradientBarPlugin = {
+// ── Chart gradient plugin ─────────────────────────────────────────────────────
+const gradientPlugin = {
   id: "gradientBars",
   beforeDatasetsDraw(chart) {
     const { ctx, chartArea } = chart;
     if (!chartArea) return;
-
-    chart.data.datasets.forEach((dataset) => {
-      const gradient = ctx.createLinearGradient(
-        0,
-        chartArea.top,
-        0,
-        chartArea.bottom,
-      );
-
-      if (dataset.label === "Latest Test") {
-        gradient.addColorStop(0, "#6366F1");
-        gradient.addColorStop(1, "#4338CA");
-        dataset.backgroundColor = gradient;
+    chart.data.datasets.forEach((ds) => {
+      const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+      if (ds.label === "Latest Test") {
+        g.addColorStop(0, "#6366F1");
+        g.addColorStop(1, "#4338CA");
+        ds.backgroundColor = g;
       }
-
-      if (dataset.label === "Previous Test") {
-        gradient.addColorStop(0, "#64748B"); // darker slate
-        gradient.addColorStop(1, "#334155"); // deep slate
-        dataset.backgroundColor = gradient;
+      if (ds.label === "Previous Test") {
+        g.addColorStop(0, "#64748B");
+        g.addColorStop(1, "#334155");
+        ds.backgroundColor = g;
       }
     });
   },
 };
+ChartJS.register(gradientPlugin);
 
-ChartJS.register(gradientBarPlugin);
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const getDeltaInfo = (delta, totalAttempts) => {
+  if (delta === null) return null;
 
-// ─────────────────────────────────────────────────────────────────────────────
+  if (delta > 0)
+    return {
+      icon: "📈",
+      text: `Improved by ${delta}% compared to previous attempt`,
+      cls: "up",
+    };
 
+  if (delta < 0)
+    return {
+      icon: "📉",
+      text: `Dropped by ${Math.abs(delta)}% compared to previous attempt`,
+      cls: "down",
+    };
+
+  // delta === 0
+  if (totalAttempts >= 2) {
+    return {
+      icon: "➡️",
+      text:
+        totalAttempts === 2
+          ? "No change from previous attempt"
+          : "No change in your last two attempts",
+      cls: "same",
+    };
+  }
+
+  return null;
+};
+
+// ── Component ─────────────────────────────────────────────────────────────────
 const QuizTab = () => {
   const { quizData } = useDashboard();
   const chartRef = useRef(null);
-
   const [activeSubject, setActiveSubject] = useState(null);
 
   const rawQuizArray = useMemo(
@@ -100,7 +125,6 @@ const QuizTab = () => {
           map[chapter].push({
             score_pct: score_pct ?? 0,
             date: quiz.created_at ?? "",
-            name: quiz.name ?? chapter,
           });
         },
       );
@@ -111,31 +135,27 @@ const QuizTab = () => {
     return map;
   }, [filteredArray]);
 
-  const chapterStats = useMemo(() => {
-    return Object.entries(chapterHistory).map(([chapter, attempts]) => {
-      const latest = attempts[attempts.length - 1];
-      const previous =
-        attempts.length > 1 ? attempts[attempts.length - 2] : null;
-      const delta = previous ? latest.score_pct - previous.score_pct : null;
-      return {
-        chapter,
-        latestScore: latest.score_pct,
-        prevScore: previous?.score_pct ?? null,
-        delta,
-        totalAttempts: attempts.length,
-        latestName: latest.name,
-      };
-    });
-  }, [chapterHistory]);
+  const chapterStats = useMemo(
+    () =>
+      Object.entries(chapterHistory).map(([chapter, attempts]) => {
+        const latest = attempts[attempts.length - 1];
+        const previous =
+          attempts.length > 1 ? attempts[attempts.length - 2] : null;
+        const delta = previous ? latest.score_pct - previous.score_pct : null;
+        return {
+          chapter,
+          latestScore: latest.score_pct,
+          prevScore: previous?.score_pct ?? null,
+          delta,
+          totalAttempts: attempts.length,
+        };
+      }),
+    [chapterHistory],
+  );
 
-  const labels = chapterStats.map((c) => c.chapter);
-  const latestValues = chapterStats.map((c) => c.latestScore);
-  const prevValues = chapterStats.map((c) => c.prevScore);
-  const deltas = chapterStats.map((c) => c.delta);
-  const hasPrevData = prevValues.some((v) => v !== null);
+  const hasPrevData = chapterStats.some((c) => c.prevScore !== null);
   const totalQuizzes = filteredArray.length;
 
-  // ── AI Insights ────────────────────────────────────────────────────────────
   const insights = useMemo(() => {
     const withDelta = chapterStats.filter((c) => c.delta !== null);
     const bestChapter = withDelta.length
@@ -155,55 +175,38 @@ const QuizTab = () => {
     return { bestChapter, avgDelta, focusChapter };
   }, [chapterStats]);
 
-  // ── Chart data ─────────────────────────────────────────────────────────────
+  // ── Chart config ────────────────────────────────────────────────────────────
   const chartData = {
-    labels,
+    labels: chapterStats.map((c) => c.chapter),
     datasets: [
       ...(hasPrevData
         ? [
             {
               label: "Previous Test",
-              data: prevValues,
-              backgroundColor: (context) => {
-                const { chart } = context;
-                const { ctx, chartArea } = chart;
-                if (!chartArea) return "#64748B";
-
-                const gradient = ctx.createLinearGradient(
-                  0,
-                  chartArea.top,
-                  0,
-                  chartArea.bottom,
-                );
-
-                gradient.addColorStop(0, "#64748B"); // slate 500
-                gradient.addColorStop(1, "#334155"); // slate 700
-
-                return gradient;
-              },
-              borderRadius: 16,
+              data: chapterStats.map((c) => c.prevScore),
+              backgroundColor: "#64748B",
+              borderRadius: 12,
               borderSkipped: false,
-              barPercentage: 0.6,
-              categoryPercentage: 0.72,
+              barPercentage: 0.58,
+              categoryPercentage: 0.7,
             },
           ]
         : []),
       {
         label: "Latest Test",
-        data: latestValues,
-        // gradient applied by plugin
+        data: chapterStats.map((c) => c.latestScore),
         backgroundColor: "#6366F1",
         borderColor: "transparent",
         borderWidth: 0,
         borderRadius: {
-          topLeft: 16,
-          topRight: 16,
-          bottomLeft: 4,
-          bottomRight: 4,
+          topLeft: 12,
+          topRight: 12,
+          bottomLeft: 3,
+          bottomRight: 3,
         },
         borderSkipped: false,
-        barPercentage: 0.65,
-        categoryPercentage: 0.72,
+        barPercentage: 0.62,
+        categoryPercentage: 0.7,
       },
     ],
   };
@@ -211,51 +214,40 @@ const QuizTab = () => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    layout: { padding: { right: 16, top: 20, left: 4, bottom: 4 } },
+    layout: { padding: { top: 16, right: 8, bottom: 0, left: 0 } },
     animation: {
-      duration: 800,
+      duration: 700,
       easing: "easeOutQuart",
-      delay: (ctx) => {
-        // Latest bars animate 250ms after previous bars
-        if (hasPrevData && ctx.datasetIndex === 1) return 250;
-        return 0;
-      },
+      delay: (ctx) => (hasPrevData && ctx.datasetIndex === 1 ? 220 : 0),
     },
     plugins: {
       legend: { display: false },
       tooltip: {
-        backgroundColor: "rgba(15,23,42,0.97)",
-        padding: { top: 14, bottom: 14, left: 16, right: 16 },
-        cornerRadius: 14,
-        titleFont: {
-          family: "'Plus Jakarta Sans', system-ui",
-          size: 13,
-          weight: "800",
-        },
-        bodyFont: {
-          family: "'Plus Jakarta Sans', system-ui",
-          size: 12,
-          weight: "500",
-        },
-        bodySpacing: 5,
-        borderColor: "rgba(255,255,255,0.06)",
+        backgroundColor: "#0F172A",
+        padding: { top: 12, bottom: 12, left: 16, right: 16 },
+        cornerRadius: 12,
+        titleFont: { family: "'Outfit', system-ui", size: 13, weight: "700" },
+        bodyFont: { family: "'Outfit', system-ui", size: 12, weight: "400" },
+        bodySpacing: 6,
+        borderColor: "rgba(255,255,255,0.08)",
         borderWidth: 1,
         callbacks: {
           title: (items) => chapterStats[items[0].dataIndex]?.chapter || "",
           label: () => null,
           afterBody: (items) => {
-            const stat = chapterStats[items[0].dataIndex];
-            if (!stat) return [];
+            const s = chapterStats[items[0].dataIndex];
+            if (!s) return [];
             const lines = [];
-            if (stat.prevScore !== null)
-              lines.push(`  Previous    ${stat.prevScore}%`);
-            lines.push(`  Latest      ${stat.latestScore}%`);
-            if (stat.delta !== null) {
-              const sign = stat.delta > 0 ? "+" : "";
-              const arrow = stat.delta > 0 ? "▲" : stat.delta < 0 ? "▼" : "=";
-              lines.push(`  Change      ${arrow} ${sign}${stat.delta}%`);
+            if (s.prevScore !== null)
+              lines.push(`  Previous    ${s.prevScore}%`);
+            lines.push(`  Latest      ${s.latestScore}%`);
+            if (s.delta !== null) {
+              const arrow = s.delta > 0 ? "▲" : s.delta < 0 ? "▼" : "=";
+              lines.push(
+                `  Change      ${arrow} ${s.delta > 0 ? "+" : ""}${s.delta}%`,
+              );
             }
-            lines.push(`  Attempts   ${stat.totalAttempts}`);
+            lines.push(`  Attempts   ${s.totalAttempts}`);
             return lines;
           },
         },
@@ -266,35 +258,22 @@ const QuizTab = () => {
         beginAtZero: true,
         max: 100,
         ticks: {
-          callback: (v) => v + "%",
-          color: "#0563e8",
-          font: {
-            family: "'Plus Jakarta Sans', system-ui",
-            size: 12,
-            weight: "700",
-          },
+          callback: (v) => `${v}%`,
+          color: "#2563EB",
+          font: { family: "'Outfit', system-ui", size: 11, weight: "600" },
           stepSize: 25,
         },
-        grid: {
-          color: "rgba(15,23,42,0.08)",
-          lineWidth: 1,
-        },
+        grid: { color: "rgba(15,23,42,0.06)", lineWidth: 1 },
         border: { display: false },
       },
       x: {
         grid: { display: false },
         ticks: {
-          color: "#171c24",
-          font: {
-            family: "'Plus Jakarta Sans', system-ui",
-            size: 11,
-            weight: "600",
-          },
-          maxRotation: 20,
-          callback(val) {
-            const lbl = this.getLabelForValue(val);
-            return lbl.length > 12 ? lbl.slice(0, 11) + "…" : lbl;
-          },
+          color: "#1E293B",
+          font: { family: "'Outfit', system-ui", size: 11, weight: "600" },
+          maxRotation: 30,
+          minRotation: 0,
+          autoSkip: false,
         },
         border: { display: false },
       },
@@ -305,20 +284,20 @@ const QuizTab = () => {
     ? SUBJECT_CONFIG[activeSubject] || {
         label: activeSubject,
         emoji: "📖",
-        accent: "#6366F1",
+        accent: "#4F46E5",
       }
     : null;
 
   return (
     <div className="qt-root">
-      {/* ── Subject Filter Tabs ── */}
+      {/* ══ Subject tabs ══════════════════════════════════════════════════════ */}
       {availableSubjects.length > 0 && (
-        <div className="qt-subject-row">
+        <div className="qt-tabs">
           {availableSubjects.map((subj) => {
             const cfg = SUBJECT_CONFIG[subj] || {
               label: subj,
               emoji: "📖",
-              accent: "#6366F1",
+              accent: "#4F46E5",
             };
             const count = rawQuizArray.filter(
               (q) => q?.graph_data?.subject === subj,
@@ -327,173 +306,216 @@ const QuizTab = () => {
             return (
               <button
                 key={subj}
-                className={`qt-subject-btn ${isActive ? "qt-subject-btn--on" : ""}`}
-                style={isActive ? { "--sa": cfg.accent } : {}}
+                className={`qt-tab ${isActive ? "qt-tab--active" : ""}`}
+                style={isActive ? { "--accent": cfg.accent } : {}}
                 onClick={() => setActiveSubject(subj)}
               >
-                <span className="qt-subj-emoji">{cfg.emoji}</span>
-                <span className="qt-subj-label">{cfg.label}</span>
-                <span className="qt-subj-badge">{count}</span>
+                <span className="qt-tab__emoji">{cfg.emoji}</span>
+                <span className="qt-tab__label">{cfg.label}</span>
+                <span className="qt-tab__count">{count}</span>
               </button>
             );
           })}
         </div>
       )}
 
-      {/* ── Stats strip ── */}
-      <div className="qt-stats-strip">
-        <div className="qt-stat-chip">
-          <span className="qt-stat-chip__num">{totalQuizzes}</span>
-          <span className="qt-stat-chip__lbl">Quizzes</span>
+      {/* ══ Summary strip ════════════════════════════════════════════════════ */}
+      <div className="qt-summary">
+        <div className="qt-summary-stat">
+          <span className="qt-summary-stat__n">{totalQuizzes}</span>
+          <span className="qt-summary-stat__l">Total Quizzes</span>
         </div>
-        <div className="qt-stat-chip">
-          <span className="qt-stat-chip__num">{chapterStats.length}</span>
-          <span className="qt-stat-chip__lbl">Chapters</span>
+        <div className="qt-summary-divider" />
+        <div className="qt-summary-stat">
+          <span className="qt-summary-stat__n">{chapterStats.length}</span>
+          <span className="qt-summary-stat__l">Chapters Covered</span>
         </div>
-        {/* {insights.avgDelta !== null && (
-          <div
-            className={`qt-stat-chip ${insights.avgDelta >= 0 ? "qt-stat-chip--pos" : "qt-stat-chip--neg"}`}
-          >
-            <span className="qt-stat-chip__num">
-              {insights.avgDelta >= 0 ? "+" : ""}
-              {insights.avgDelta}%
-            </span>
-            <span className="qt-stat-chip__lbl">Avg Change</span>
-          </div>
-        )} */}
+        {insights.avgDelta !== null && (
+          <>
+            <div className="qt-summary-divider" />
+            <div
+              className={`qt-summary-stat ${insights.avgDelta >= 0 ? "qt-summary-stat--pos" : "qt-summary-stat--neg"}`}
+            >
+              <span className="qt-summary-stat__n">
+                {insights.avgDelta >= 0 ? "+" : ""}
+                {insights.avgDelta}%
+              </span>
+              <span className="qt-summary-stat__l">Avg Improvement</span>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* ── Main chart card ── */}
       {chapterStats.length > 0 ? (
         <>
+          {/* ══ Main card ═════════════════════════════════════════════════════ */}
           <div className="qt-card">
             {/* Card header */}
-            <div className="qt-card-head">
-              <div>
-                <p className="qt-card-eyebrow">
-                  {activeConfig?.emoji} {activeConfig?.label}
+            <div className="qt-card-header">
+              <div className="qt-card-header__left">
+                <p className="qt-eyebrow">
+                  {activeConfig?.emoji} {activeConfig?.label} · Chapter
+                  Performance
                 </p>
-                <h3 className="qt-card-title">Chapter Performance</h3>
+                <h2 className="qt-card-title">Score Comparison by Chapter</h2>
                 <p className="qt-card-sub">
                   {hasPrevData
-                    ? "Last 2 attempts per chapter — hover for details"
-                    : "Latest attempt per chapter — hover for details"}
+                    ? "Comparing your last 2 attempts per chapter"
+                    : "Your latest attempt score per chapter"}
                 </p>
               </div>
-
-              {/* Legend */}
               <div className="qt-legend">
                 {hasPrevData && (
                   <div className="qt-legend-item">
-                    <span className="qt-legend-dot qt-legend-dot--prev" />
-                    <span>Previous</span>
+                    <span className="qt-legend-swatch qt-legend-swatch--prev" />
+                    <span>Previous Test</span>
                   </div>
                 )}
                 <div className="qt-legend-item">
-                  <span className="qt-legend-dot qt-legend-dot--latest" />
-                  <span>Latest</span>
+                  <span className="qt-legend-swatch qt-legend-swatch--latest" />
+                  <span>Latest Test</span>
                 </div>
               </div>
             </div>
 
-            {/* Chapter summary pills — delta inline */}
-            <div className="qt-pills-row">
+            {/* ── Chapter summary cards ─────────────────────────────────────── */}
+            <div className="qt-chapter-grid">
               {chapterStats.map((stat) => {
-                const trendCls =
+                const delta = getDeltaInfo(stat.delta, stat.totalAttempts);
+                const mod =
                   stat.delta === null
-                    ? "qt-pill--first"
+                    ? "first"
                     : stat.delta > 0
-                      ? "qt-pill--up"
+                      ? "up"
                       : stat.delta < 0
-                        ? "qt-pill--down"
-                        : "qt-pill--same";
+                        ? "down"
+                        : "same";
                 return (
-                  <div key={stat.chapter} className={`qt-pill ${trendCls}`}>
-                    <span className="qt-pill__name" title={stat.chapter}>
-                      {stat.chapter.length > 16
-                        ? stat.chapter.slice(0, 15) + "…"
-                        : stat.chapter}
-                    </span>
-                    {stat.delta !== null && (
-                      <span className="qt-pill__delta">
-                        {stat.delta > 0
-                          ? `▲ +${stat.delta}%`
-                          : stat.delta < 0
-                            ? `▼ ${stat.delta}%`
-                            : "="}
-                      </span>
-                    )}
-                    <span className="qt-pill__cnt">{stat.totalAttempts}×</span>
+                  <div
+                    key={stat.chapter}
+                    className={`qt-chapter-card qt-chapter-card--${mod}`}
+                  >
+                    <div className="qt-chapter-card__accent-bar" />
+                    <div className="qt-chapter-card__body">
+                      <p className="qt-chapter-card__name">{stat.chapter}</p>
+                      <div className="qt-chapter-card__meta">
+                        <span className="qt-chapter-card__score">
+                          {stat.latestScore}%
+                        </span>
+                        <span className="qt-chapter-card__sep">·</span>
+                        <span className="qt-chapter-card__attempts">
+                          📊 {stat.totalAttempts}{" "}
+                          {stat.totalAttempts === 1 ? "attempt" : "attempts"}
+                        </span>
+                      </div>
+                      <p className="qt-chapter-card__delta">
+                        {stat.delta !== null ? (
+                          <>
+                            {delta.icon} {delta.text}
+                          </>
+                        ) : (
+                          <>✨ First attempt</>
+                        )}
+                      </p>
+                    </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Bar chart — NO plugins that draw floating badges */}
+            {/* Bar chart */}
             <div className="qt-chart-wrap">
               <Bar ref={chartRef} data={chartData} options={chartOptions} />
             </div>
           </div>
 
-          {/* ── AI Insight card ── */}
-          <div className="qt-insight-card">
-            <div className="qt-insight-header">
-              <span className="qt-insight-pill">✦ AI Insights</span>
-              <p className="qt-insight-heading">Performance Analysis</p>
+          {/* ══ Performance Analysis ══════════════════════════════════════════ */}
+          <div className="qt-analysis-card">
+            <div className="qt-analysis-header">
+              <div className="qt-analysis-badge">✦ AI Insights</div>
+              <h2 className="qt-analysis-title">Performance Analysis</h2>
+              <p className="qt-analysis-sub">
+                Based on your quiz history — keep going! 💪
+              </p>
             </div>
 
-            <div className="qt-insight-grid">
+            <div className="qt-analysis-grid">
+              {/* Strongest Growth */}
               {insights.bestChapter && (
-                <div className="qt-insight-item qt-insight-item--green">
-                  <span className="qt-insight-icon">🚀</span>
-                  <div>
-                    <p className="qt-insight-label">Strongest Growth</p>
-                    <p className="qt-insight-val">
-                      {insights.bestChapter.chapter.length > 20
-                        ? insights.bestChapter.chapter.slice(0, 19) + "…"
-                        : insights.bestChapter.chapter}
-                      <span className="qt-insight-badge qt-insight-badge--green">
-                        +{insights.bestChapter.delta}%
-                      </span>
+                <div className="qt-analysis-item qt-analysis-item--green">
+                  <div className="qt-analysis-item__icon-wrap qt-analysis-item__icon-wrap--green">
+                    🔥
+                  </div>
+                  <div className="qt-analysis-item__content">
+                    <p className="qt-analysis-item__label">
+                      🏆 Strongest Growth
+                    </p>
+                    <p className="qt-analysis-item__chapter">
+                      {insights.bestChapter.chapter}
+                    </p>
+                    <p className="qt-analysis-item__desc">
+                      You improved by{" "}
+                      <mark className="qt-mark qt-mark--green">
+                        {insights.bestChapter.delta}%
+                      </mark>{" "}
+                      in your most recent attempts. Great progress!
                     </p>
                   </div>
                 </div>
               )}
 
+              {/* Overall Trend */}
               {insights.avgDelta !== null && (
                 <div
-                  className={`qt-insight-item ${insights.avgDelta >= 0 ? "qt-insight-item--indigo" : "qt-insight-item--red"}`}
+                  className={`qt-analysis-item ${insights.avgDelta >= 0 ? "qt-analysis-item--indigo" : "qt-analysis-item--red"}`}
                 >
-                  <span className="qt-insight-icon">📈</span>
-                  <div>
-                    <p className="qt-insight-label">Overall Trend</p>
-                    <p className="qt-insight-val">
+                  <div
+                    className={`qt-analysis-item__icon-wrap ${insights.avgDelta >= 0 ? "qt-analysis-item__icon-wrap--indigo" : "qt-analysis-item__icon-wrap--red"}`}
+                  >
+                    📊
+                  </div>
+                  <div className="qt-analysis-item__content">
+                    <p className="qt-analysis-item__label">
+                      📈 Overall Performance Trend
+                    </p>
+                    <p className="qt-analysis-item__chapter">
                       {insights.avgDelta >= 0
-                        ? "Improving overall"
-                        : "Needs attention"}
-                      <span
-                        className={`qt-insight-badge ${insights.avgDelta >= 0 ? "qt-insight-badge--indigo" : "qt-insight-badge--red"}`}
+                        ? "Improving Overall"
+                        : "Needs More Practice"}
+                    </p>
+                    <p className="qt-analysis-item__desc">
+                      Your overall performance{" "}
+                      {insights.avgDelta >= 0 ? "improved" : "dropped"} by{" "}
+                      <mark
+                        className={`qt-mark ${insights.avgDelta >= 0 ? "qt-mark--indigo" : "qt-mark--red"}`}
                       >
-                        {insights.avgDelta >= 0 ? "+" : ""}
-                        {insights.avgDelta}% avg
-                      </span>
+                        {Math.abs(insights.avgDelta)}%
+                      </mark>{" "}
+                      compared to your previous attempts.
                     </p>
                   </div>
                 </div>
               )}
 
+              {/* Recommended Focus */}
               {insights.focusChapter && (
-                <div className="qt-insight-item qt-insight-item--amber">
-                  <span className="qt-insight-icon">⚡</span>
-                  <div>
-                    <p className="qt-insight-label">Focus Next</p>
-                    <p className="qt-insight-val">
-                      {insights.focusChapter.chapter.length > 20
-                        ? insights.focusChapter.chapter.slice(0, 19) + "…"
-                        : insights.focusChapter.chapter}
-                      <span className="qt-insight-badge qt-insight-badge--amber">
+                <div className="qt-analysis-item qt-analysis-item--amber">
+                  <div className="qt-analysis-item__icon-wrap qt-analysis-item__icon-wrap--amber">
+                    ⚡
+                  </div>
+                  <div className="qt-analysis-item__content">
+                    <p className="qt-analysis-item__label">
+                      🎯 Recommended Focus Area
+                    </p>
+                    <p className="qt-analysis-item__chapter">
+                      {insights.focusChapter.chapter}
+                    </p>
+                    <p className="qt-analysis-item__desc">
+                      Current mastery level is{" "}
+                      <mark className="qt-mark qt-mark--amber">
                         {insights.focusChapter.latestScore}%
-                      </span>
+                      </mark>
+                      . A bit more practice here will make a big difference!
                     </p>
                   </div>
                 </div>
@@ -503,12 +525,11 @@ const QuizTab = () => {
         </>
       ) : (
         <div className="qt-empty">
-          <div className="qt-empty-orb" />
-          <p className="qt-empty-title">No data yet</p>
-          <p className="qt-empty-sub">
-            {activeSubject
-              ? `Complete a ${activeConfig?.label || activeSubject} quiz to see your results`
-              : "Select a subject to get started"}
+          <p className="qt-empty__icon">📚</p>
+          <p className="qt-empty__title">No quiz data yet</p>
+          <p className="qt-empty__sub">
+            Complete a {activeConfig ? activeConfig.label : "subject"} quiz to
+            see your chapter performance here.
           </p>
         </div>
       )}
