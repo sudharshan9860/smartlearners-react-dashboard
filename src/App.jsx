@@ -7,9 +7,10 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DashboardProvider } from "./contexts/DashboardContext";
-import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import PrivateRoute from "./components/PrivateRoute";
+
+// LoginPage import removed — no login page needed
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
       <AuthProvider>
         <DashboardProvider>
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
+            {/* Dashboard is now the only real route */}
             <Route
               path="/dashboard"
               element={
@@ -26,8 +27,12 @@ function App() {
                 </PrivateRoute>
               }
             />
+
+            {/* Everything redirects to dashboard */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
+
+            {/* /login route removed — if anyone hits it, goes to dashboard */}
           </Routes>
         </DashboardProvider>
       </AuthProvider>

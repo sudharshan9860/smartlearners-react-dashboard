@@ -1,8 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { authAPI } from "../api/auth";
-import { setTokens, clearTokens } from "../api/axiosInstance";
+import { clearTokens } from "../api/axiosInstance";
 
 const AuthContext = createContext(null);
+
+// ─── Credentials from environment variables ─────────────────────────────────
+// Store these in your .env file as:
+//   VITE_AUTO_USERNAME=your_username
+//   VITE_AUTO_PASSWORD=your_password
+// Never commit real credentials to git — add .env to .gitignore
+const AUTO_USERNAME = import.meta.env.VITE_AUTO_USERNAME;
+const AUTO_PASSWORD = import.meta.env.VITE_AUTO_PASSWORD;
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -14,49 +22,70 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // starts true → shows loader until auto-login completes
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Check if user is already logged in (e.g., from localStorage)
-    const checkAuth = async () => {
+    // ── Auto-login on app mount ──────────────────────────────────────────────
+    // 1. First try to reuse existing valid token (avoids re-login on page refresh)
+    // 2. If no valid token, auto-login with the hardcoded credentials
+    const autoLogin = async () => {
       try {
+        // Step 1: Check if we already have a valid token in sessionStorage
         const isValid = await authAPI.verifyToken();
         if (isValid) {
-          // Token is valid, user is authenticated
-          const username = localStorage.getItem("username");
-          if (username) {
-            setUser({ username });
-          }
+          // Token still valid — no need to re-login
+          setUser({ username: AUTO_USERNAME || "Student" });
+          setLoading(false);
+          return;
         }
+      } catch {
+        // Token invalid or missing — fall through to auto-login below
+      }
+
+      // Step 2: Auto-login with credentials from .env
+      try {
+        if (!AUTO_USERNAME || !AUTO_PASSWORD) {
+          throw new Error(
+            "VITE_AUTO_USERNAME and VITE_AUTO_PASSWORD must be set in .env",
+          );
+        }
+
+        await authAPI.login(AUTO_USERNAME, AUTO_PASSWORD);
+        setUser({ username: AUTO_USERNAME });
+        setError(null);
       } catch (err) {
-        console.error("Auth check failed:", err);
+        console.error("Auto-login failed:", err);
+        setError(
+          err.response?.data?.detail || err.message || "Auto-login failed",
+        );
+        // Even on failure, stop loading — show dashboard with whatever we have
+        // API calls will fail gracefully (empty states) rather than hanging
       } finally {
         setLoading(false);
       }
     };
 
-    checkAuth();
-  }, []);
+    autoLogin();
+  }, []); // runs once on mount
 
-  const login = async (username, password) => {
+  // ── Re-login helper ────────────────────────────────────────────────────────
+  // Called automatically by axios interceptor when token expires mid-session.
+  // Exposed so the interceptor can trigger a silent re-login instead of
+  // redirecting to a login page that no longer exists.
+  const silentReLogin = async () => {
     try {
-      setError(null);
-      const data = await authAPI.login(username, password);
-      setUser({ username });
-      localStorage.setItem("username", username);
-      return { success: true };
-    } catch (err) {
-      const errorMessage =
-        err.response?.data?.detail ||
-        err.response?.data?.error ||
-        err.message ||
-        "Login failed";
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
+      await authAPI.login(AUTO_USERNAME, AUTO_PASSWORD);
+      setUser({ username: AUTO_USERNAME });
+      return true;
+    } catch {
+      setUser(null);
+      setError("Session expired. Please refresh the page.");
+      return false;
     }
   };
 
+  // Logout is kept but just clears state — no redirect to login page needed
   const logout = async () => {
     try {
       await authAPI.logout();
@@ -64,8 +93,11 @@ export const AuthProvider = ({ children }) => {
       console.error("Logout error:", err);
     } finally {
       setUser(null);
-      localStorage.removeItem("username");
       clearTokens();
+      // Auto re-login after a brief moment so user stays on dashboard
+      setTimeout(() => {
+        window.location.reload(); // simplest way to restart auto-login flow
+      }, 500);
     }
   };
 
@@ -73,8 +105,8 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     error,
-    login,
     logout,
+    silentReLogin,
     isAuthenticated: !!user,
   };
 

@@ -27,7 +27,7 @@ const TopNav = ({ username }) => {
           <div className="user-info">
             <div className="username">{username || "User"}</div>
           </div>
-          <button onClick={logout} className="logout-btn" title="Logout">
+          {/* <button onClick={logout} className="logout-btn" title="Logout">
             <svg
               width="20"
               height="20"
@@ -43,7 +43,7 @@ const TopNav = ({ username }) => {
               <line x1="21" y1="12" x2="9" y2="12"></line>
             </svg>
             <span>Logout</span>
-          </button>
+          </button> */}
         </div>
       </div>
     </nav>
