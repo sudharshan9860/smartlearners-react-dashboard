@@ -1,66 +1,209 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   TabNavigation — Liquid Glass v3  ·  Bullet Slide Animation
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Container ─────────────────────────────────────────────────────────── */
 .tab-navigation {
   display: flex;
-  gap: 8px;
-  background: var(--white);
+  gap: 6px;
   padding: 8px;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 26px;
+  position: relative;
+
+  /* Deep indigo-violet tinted liquid glass */
+  background: rgb(234, 232, 232);
+  backdrop-filter: blur(44px) saturate(240%) brightness(112%);
+  -webkit-backdrop-filter: blur(44px) saturate(240%) brightness(112%);
+
+  border: 1px solid rgba(11, 0, 0, 0.98);
+  box-shadow:
+    0 1px 0 rgba(186, 71, 10, 0.32) inset,
+    0 -1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 24px 72px rgba(20, 10, 60, 0.35),
+    0 6px 20px rgba(0, 0, 0, 0.22),
+    0 0 0 0.5px rgba(255, 255, 255, 0.1);
 }
 
+/* Diagonal refraction shimmer */
+.tab-navigation::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    118deg,
+    rgba(28, 86, 174, 0.16) 0%,
+    rgba(255, 255, 255, 0.05) 28%,
+    transparent 48%,
+    rgba(255, 255, 255, 0.02) 72%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+/* Material grain texture */
+.tab-navigation::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: overlay;
+}
+
+/* ── Bullet — the animated sliding active pill ─────────────────────────── */
+.tab-bullet {
+  position: absolute;
+  top: 8px;
+  height: calc(100% - 16px);
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 1;
+
+  /* Frosted bright pill on top of the dark glass */
+  background: rgba(4, 82, 61, 0.455);
+  border: 1px solid rgba(6, 195, 224, 0.407);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.42) inset,
+    0 -1px 0 rgba(255, 255, 255, 0.08) inset,
+    0 8px 32px rgba(255, 140, 60, 0.22),
+    0 2px 10px rgba(0, 0, 0, 0.18);
+
+  /* Spring-physics bullet slide */
+  transition:
+    left 0.42s cubic-bezier(0.34, 1.3, 0.64, 1),
+    width 0.42s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+/* Shimmer sweep fires on every move */
+.tab-bullet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: bullet-shimmer 0.65s ease forwards;
+}
+@keyframes bullet-shimmer {
+  from {
+    background-position: -100% 0;
+  }
+  to {
+    background-position: 220% 0;
+  }
+}
+
+/* ── Tab buttons ───────────────────────────────────────────────────────── */
 .tab-btn {
   flex: 1;
+  position: relative;
+  z-index: 2;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius);
-  color: var(--gray-600);
-  font-size: 0.9375rem;
+  gap: 12px;
+  padding: 20px 24px; /* Bigger padding for larger presence */
+  border-radius: 20px;
+  border: none !important;
+  background: transparent !important;
+  color: rgb(255, 119, 0);
+
+  font-family:
+    "Plus Jakarta Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 1.0625rem; /* Bigger text */
   font-weight: 600;
+  letter-spacing: -0.01em;
   cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
+  white-space: nowrap;
+
+  /* Only colour transitions — position handled by JS bullet */
+  transition: color 0.2s ease;
+}
+
+/* Kill ALL pseudo-element underlines / indicators from old CSS */
+.tab-btn::before,
+.tab-btn::after {
+  display: none !important;
+  content: none !important;
 }
 
 .tab-btn:hover {
-  background: var(--gray-50);
-  color: var(--gray-900);
+  color: rgba(3, 15, 138, 0.8);
 }
 
+/* Active: bright white text + heavier weight (pill is from bullet div) */
 .tab-btn.active {
-  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
-  color: var(--white);
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  color: rgba(0, 0, 0, 0.97) !important;
+  font-weight: 800 !important;
 }
 
+/* ── Icon ──────────────────────────────────────────────────────────────── */
 .tab-icon {
-  font-size: 1.25rem;
+  font-size: 1.375rem;
   line-height: 1;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.28));
+  transition:
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 0.2s ease;
+}
+.tab-btn.active .tab-icon {
+  transform: scale(1.14);
+  filter: drop-shadow(0 2px 6px rgba(14, 14, 14, 0.4));
+}
+.tab-btn:hover:not(.active) .tab-icon {
+  transform: scale(1.08);
 }
 
 .tab-label {
-  font-weight: 600;
+  font-weight: inherit;
 }
 
+/* ── Responsive ────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .tab-navigation {
-    gap: 6px;
+    gap: 4px;
     padding: 6px;
+    border-radius: 22px;
   }
-
   .tab-btn {
-    padding: 10px 12px;
-    font-size: 0.875rem;
+    padding: 14px 12px;
+    gap: 8px;
+    font-size: 0.9375rem;
+    border-radius: 16px;
   }
-
   .tab-icon {
     font-size: 1.125rem;
   }
-
+  .tab-bullet {
+    border-radius: 16px;
+  }
+}
+@media (max-width: 540px) {
+  .tab-btn {
+    padding: 12px 8px;
+    gap: 6px;
+    font-size: 0;
+  }
+  .tab-icon {
+    font-size: 1.25rem;
+  }
+  /* Show icon only on very small */
   .tab-label {
     display: none;
+  }
+  .tab-btn {
+    font-size: inherit;
   }
 }

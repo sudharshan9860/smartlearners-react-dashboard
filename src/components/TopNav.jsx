@@ -5,8 +5,8 @@ import "./TopNav.css";
 const TopNav = ({ username }) => {
   const { logout } = useAuth();
 
-  const getInitial = (name) => {
-    return name ? name.charAt(0).toUpperCase() : "U";
+  const getInitial = () => {
+    return "A";
   };
 
   return (
@@ -25,7 +25,7 @@ const TopNav = ({ username }) => {
             <span className="avatar-initial">{getInitial(username)}</span>
           </div>
           <div className="user-info">
-            <div className="username">{username || "User"}</div>
+            <div className="username">{"ANVESHA"}</div>
           </div>
           {/* <button onClick={logout} className="logout-btn" title="Logout">
             <svg

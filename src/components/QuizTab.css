@@ -1,60 +1,37 @@
-/* ══════════════════════════════════════════════════════════════════════════════
-   QuizTab.css — Production-Ready · CBSE Student Dashboard
-   Font: Outfit (Google) — clean, modern, education-friendly
-   Design: Premium SaaS · High contrast · Clear hierarchy
-   ══════════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   QuizTab.css — Glass Premium Academic  (v2 — refined color system)
+   ════════════════════════════════════════════════════════════════════════════ */
 
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap");
-
-/* ── CSS Variables ─────────────────────────────────────────────────────────── */
+/* ── CSS Variables ─────────────────────────────────────────────────────── */
 :root {
-  --qt-font: "Outfit", system-ui, -apple-system, sans-serif;
-
-  /* Text */
+  --qt-font: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   --qt-text-900: #0f172a;
   --qt-text-700: #1e293b;
   --qt-text-500: #475569;
   --qt-text-400: #64748b;
   --qt-text-300: #94a3b8;
 
-  /* Surface */
-  --qt-surface: #ffffff;
-  --qt-surface-2: #f8fafc;
-  --qt-border: #e2e8f0;
-  --qt-border-2: #f1f5f9;
-
-  /* Brand */
-  --qt-indigo: #4f46e5;
-  --qt-indigo-lt: #eef2ff;
-  --qt-indigo-md: #c7d2fe;
-
-  /* Semantic */
+  /* Semantic — used only inside content, not as card backgrounds */
   --qt-green: #059669;
-  --qt-green-lt: #ecfdf5;
-  --qt-green-md: #a7f3d0;
-
   --qt-red: #dc2626;
-  --qt-red-lt: #fff1f2;
-  --qt-red-md: #fecaca;
-
   --qt-amber: #d97706;
-  --qt-amber-lt: #fffbeb;
-  --qt-amber-md: #fde68a;
+  --qt-indigo: #4f46e5;
+  --qt-orange: #f97316;
 
-  /* Shadows */
-  --qt-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --qt-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
-  --qt-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.07), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --qt-glass: rgba(255, 255, 255, 0.72);
+  --qt-glass-border: rgba(255, 255, 255, 0.6);
+  --qt-glass-shadow:
+    0 4px 24px rgba(79, 70, 229, 0.07), 0 1px 4px rgba(0, 0, 0, 0.04);
+  --qt-glass-hover:
+    0 8px 32px rgba(79, 70, 229, 0.12), 0 2px 8px rgba(0, 0, 0, 0.05);
 
-  /* Animation */
   --qt-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --qt-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ── Root ──────────────────────────────────────────────────────────────────── */
+/* ── Root ──────────────────────────────────────────────────────────────── */
 .qt-root {
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   font-family: var(--qt-font);
   padding-bottom: 64px;
   animation: qt-fadein 0.4s var(--qt-ease-out) both;
@@ -63,7 +40,7 @@
 @keyframes qt-fadein {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -71,9 +48,9 @@
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   Subject Tabs
-   ══════════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   Subject Tabs (Mathematics / Physics)
+   ════════════════════════════════════════════════════════════════════════════ */
 .qt-tabs {
   display: flex;
   gap: 8px;
@@ -85,130 +62,130 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 20px;
+  padding: 9px 18px;
   border-radius: 999px;
-  border: 1.5px solid var(--qt-border);
-  background: var(--qt-surface);
+  border: 1px solid var(--qt-glass-border);
+  background: var(--qt-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--qt-text-400);
   font-family: var(--qt-font);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition:
-    background 0.16s ease,
-    border-color 0.16s ease,
-    color 0.16s ease,
-    transform 0.2s var(--qt-ease-spring),
-    box-shadow 0.16s ease;
+  transition: all 0.2s var(--qt-ease-spring);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
-
 .qt-tab:hover {
-  border-color: var(--qt-indigo-md);
-  background: var(--qt-indigo-lt);
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(79, 70, 229, 0.2);
   color: var(--qt-indigo);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.08);
 }
-
 .qt-tab--active {
-  background: color-mix(in srgb, var(--accent, var(--qt-indigo)) 10%, white);
-  border-color: var(--accent, var(--qt-indigo));
-  color: var(--accent, var(--qt-indigo));
-  box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--accent, var(--qt-indigo)) 15%, transparent);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, var(--qt-orange), #ea580c);
+  border-color: transparent;
+  color: #fff;
+  box-shadow:
+    0 6px 20px rgba(249, 115, 22, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
-
+.qt-tab--active:hover {
+  transform: translateY(-3px);
+}
 .qt-tab__emoji {
   font-size: 1rem;
   line-height: 1;
 }
-
 .qt-tab__label {
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-
 .qt-tab__count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 22px;
-  height: 20px;
-  padding: 0 6px;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 5px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.07);
-  font-size: 0.7rem;
+  background: rgba(0, 0, 0, 0.08);
+  font-size: 0.68rem;
   font-weight: 800;
 }
 .qt-tab--active .qt-tab__count {
-  background: var(--accent, var(--qt-indigo));
-  color: #fff;
+  background: rgba(255, 255, 255, 0.25);
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   Summary Strip
-   ══════════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   Glass Summary Strip  (15 quizzes / 5 chapters / +30%)
+   ════════════════════════════════════════════════════════════════════════════ */
 .qt-summary {
   display: inline-flex;
   align-items: center;
   gap: 0;
-  background: #fcfcfd;
-  border: 1.5px solid var(--qt-border);
-  border-radius: 14px;
-  box-shadow: var(--qt-shadow-sm);
+  background: var(--qt-glass);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--qt-glass-border);
+  border-radius: 16px;
+  box-shadow:
+    var(--qt-glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   padding: 0 4px;
   margin-bottom: 20px;
   overflow: hidden;
 }
-
 .qt-summary-stat {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 24px;
+  padding: 14px 28px;
 }
-
 .qt-summary-stat__n {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 1.625rem;
+  font-weight: 800;
   color: var(--qt-text-900);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
   line-height: 1;
 }
-
 .qt-summary-stat__l {
   font-size: 0.68rem;
   font-weight: 600;
   color: var(--qt-text-300);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-top: 3px;
+  /* removed uppercase for cleaner look */
+  letter-spacing: 0.02em;
+  margin-top: 4px;
   white-space: nowrap;
 }
-
 .qt-summary-stat--pos .qt-summary-stat__n {
   color: var(--qt-green);
 }
 .qt-summary-stat--neg .qt-summary-stat__n {
   color: var(--qt-red);
 }
-
 .qt-summary-divider {
   width: 1px;
   height: 36px;
-  background: var(--qt-border);
+  background: rgba(0, 0, 0, 0.06);
   flex-shrink: 0;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   Main Card
-   ══════════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   Glass Main Card
+   ════════════════════════════════════════════════════════════════════════════ */
 .qt-card {
-  background: var(--qt-surface);
+  background: var(--qt-glass);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--qt-glass-border);
   border-radius: 20px;
   padding: 32px;
-  border: 1.5px solid var(--qt-border-2);
-  box-shadow: var(--qt-shadow-md);
+  box-shadow:
+    var(--qt-glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   margin-bottom: 16px;
   animation: qt-fadein 0.4s 0.06s var(--qt-ease-out) both;
 }
@@ -222,30 +199,28 @@
   flex-wrap: wrap;
   margin-bottom: 28px;
 }
-
 .qt-card-header__left {
   flex: 1;
   min-width: 0;
 }
 
+/* Eyebrow — removed uppercase, use small medium weight text */
 .qt-eyebrow {
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--qt-text-300);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
   margin: 0 0 8px;
+  /* text-transform: uppercase removed */
 }
-
 .qt-card-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
   color: var(--qt-text-900);
   line-height: 1.2;
   margin: 0 0 6px;
 }
-
 .qt-card-sub {
   font-size: 0.82rem;
   color: var(--qt-text-400);
@@ -259,12 +234,11 @@
   align-items: center;
   gap: 14px;
   padding: 8px 14px;
-  background: var(--qt-surface-2);
+  background: rgba(255, 255, 255, 0.6);
   border-radius: 10px;
-  border: 1px solid var(--qt-border);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   flex-shrink: 0;
 }
-
 .qt-legend-item {
   display: flex;
   align-items: center;
@@ -273,29 +247,25 @@
   font-weight: 600;
   color: var(--qt-text-700);
 }
-
 .qt-legend-swatch {
   width: 12px;
   height: 12px;
   border-radius: 4px;
   flex-shrink: 0;
 }
-
 .qt-legend-swatch--prev {
   background: linear-gradient(135deg, #64748b, #334155);
 }
-
 .qt-legend-swatch--latest {
-  background: linear-gradient(135deg, #6366f1, #4338ca);
+  background: linear-gradient(135deg, #4f46e5, #818cf8);
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   Chapter Summary Cards
-   Replaces old pills — full info per chapter with left accent bar
-   ══════════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   Chapter Cards — NEUTRAL GLASS (status shown via accent bar + text color only)
+   ════════════════════════════════════════════════════════════════════════════ */
 .qt-chapter-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 10px;
   margin-bottom: 32px;
 }
@@ -303,56 +273,50 @@
 .qt-chapter-card {
   display: flex;
   align-items: stretch;
-  border-radius: 12px;
-  border: 1.5px solid var(--qt-border);
-  background: var(--qt-surface-2);
+  border-radius: 14px;
+  /* ALL cards get the SAME neutral glass background — no colored tint */
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.65);
   overflow: hidden;
   transition:
-    transform 0.2s var(--qt-ease-spring),
-    box-shadow 0.16s ease;
+    transform 0.22s var(--qt-ease-spring),
+    box-shadow 0.18s ease;
   cursor: default;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
-
 .qt-chapter-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--qt-shadow-lg);
+  transform: translateY(-4px);
+  box-shadow:
+    0 10px 28px rgba(79, 70, 229, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  border-color: rgba(255, 255, 255, 0.85);
 }
 
-/* Left accent bar — color coded */
+/* Override colored variants — all become neutral glass */
+.qt-chapter-card--up,
+.qt-chapter-card--down,
+.qt-chapter-card--same,
+.qt-chapter-card--first {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border-color: rgba(255, 255, 255, 0.65) !important;
+}
+
+/* Accent bar — only color indicator, 4px left strip */
 .qt-chapter-card__accent-bar {
   width: 4px;
   flex-shrink: 0;
-  border-radius: 0;
 }
-
-.qt-chapter-card--up {
-  border-color: var(--qt-green-md);
-  background: var(--qt-green-lt);
-}
-.qt-chapter-card--down {
-  border-color: var(--qt-red-md);
-  background: var(--qt-red-lt);
-}
-.qt-chapter-card--same {
-  border-color: var(--qt-border);
-  background: var(--qt-surface-2);
-}
-.qt-chapter-card--first {
-  border-color: var(--qt-indigo-md);
-  background: var(--qt-indigo-lt);
-}
-
 .qt-chapter-card--up .qt-chapter-card__accent-bar {
-  background: var(--qt-green);
+  background: linear-gradient(180deg, #059669, #10b981);
 }
 .qt-chapter-card--down .qt-chapter-card__accent-bar {
-  background: var(--qt-red);
+  background: linear-gradient(180deg, #dc2626, #ef4444);
 }
 .qt-chapter-card--same .qt-chapter-card__accent-bar {
-  background: var(--qt-text-300);
+  background: rgba(148, 163, 184, 0.4);
 }
 .qt-chapter-card--first .qt-chapter-card__accent-bar {
-  background: var(--qt-indigo);
+  background: linear-gradient(180deg, #4f46e5, #818cf8);
 }
 
 .qt-chapter-card__body {
@@ -363,61 +327,47 @@
   flex-direction: column;
   gap: 4px;
 }
-
-/* Chapter name — largest, most prominent text */
 .qt-chapter-card__name {
   font-size: 0.875rem;
-  font-weight: 600;
-  color: #1e293b;
+  font-weight: 700;
+  color: var(--qt-text-900);
   letter-spacing: -0.02em;
   line-height: 1.3;
-  margin: 0;
   word-break: break-word;
 }
-
-/* Score + attempts on same line */
 .qt-chapter-card__meta {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
 }
-
 .qt-chapter-card__score {
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: -0.04em;
   color: var(--qt-text-900);
 }
-
+/* Score color follows status but is subtle */
 .qt-chapter-card--up .qt-chapter-card__score {
   color: var(--qt-green);
 }
 .qt-chapter-card--down .qt-chapter-card__score {
   color: var(--qt-red);
 }
-
 .qt-chapter-card__sep {
   color: var(--qt-text-300);
   font-size: 0.7rem;
 }
-
 .qt-chapter-card__attempts {
   font-size: 0.72rem;
   font-weight: 500;
   color: var(--qt-text-400);
 }
-
-/* Improvement / delta text */
 .qt-chapter-card__delta {
   font-size: 0.75rem;
-  font-weight: 600;
-  opacity: 0.9;
-
-  margin: 0;
+  font-weight: 700;
   line-height: 1;
 }
-
 .qt-chapter-card--up .qt-chapter-card__delta {
   color: var(--qt-green);
 }
@@ -431,28 +381,29 @@
   color: var(--qt-indigo);
 }
 
-/* ── Chart Wrapper ─────────────────────────────────────────────────────────── */
+/* ── Chart Wrapper ──────────────────────────────────────────────────────── */
 .qt-chart-wrap {
   height: 380px;
   position: relative;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   Performance Analysis Card
-   Full sentences, clear hierarchy, prominent numbers
-   ══════════════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   Glass Analysis Card (AI Insights)
+   ════════════════════════════════════════════════════════════════════════════ */
 .qt-analysis-card {
-  background: var(--qt-surface);
+  background: var(--qt-glass);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--qt-glass-border);
   border-radius: 20px;
   padding: 32px;
-  border: 1.5px solid var(--qt-border-2);
-  box-shadow: var(--qt-shadow-md);
+  box-shadow:
+    var(--qt-glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
   position: relative;
   overflow: hidden;
   animation: qt-fadein 0.4s 0.12s var(--qt-ease-out) both;
 }
-
-/* Subtle radial glow top-right */
 .qt-analysis-card::after {
   content: "";
   position: absolute;
@@ -463,7 +414,7 @@
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(79, 70, 229, 0.05) 0%,
+    rgba(79, 70, 229, 0.03) 0%,
     transparent 65%
   );
   pointer-events: none;
@@ -472,30 +423,28 @@
 .qt-analysis-header {
   margin-bottom: 24px;
 }
-
 .qt-analysis-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 4px 12px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-  color: #3730a3;
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--qt-indigo);
+  border: 1px solid rgba(79, 70, 229, 0.12);
   font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  /* removed uppercase */
   margin-bottom: 10px;
 }
-
 .qt-analysis-title {
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 1.375rem;
+  font-weight: 800;
   color: var(--qt-text-900);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   margin: 0 0 6px;
 }
-
 .qt-analysis-sub {
   font-size: 0.82rem;
   color: var(--qt-text-400);
@@ -509,94 +458,76 @@
   gap: 12px;
 }
 
-/* Individual insight item */
+/* Analysis items — soft tinted glass, not heavy colored blocks */
 .qt-analysis-item {
   display: flex;
   gap: 14px;
   align-items: flex-start;
   padding: 20px;
   border-radius: 14px;
-  border: 1.5px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.55);
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease;
 }
-
 .qt-analysis-item:hover {
   transform: translateY(-2px);
-  box-shadow: var(--qt-shadow-lg);
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.06);
 }
 
+/* Gentle tints — not heavy */
 .qt-analysis-item--green {
-  background: var(--qt-green-lt);
-  border-color: var(--qt-green-md);
+  background: rgba(5, 150, 105, 0.04);
+  border-color: rgba(5, 150, 105, 0.12);
 }
 .qt-analysis-item--indigo {
-  background: var(--qt-indigo-lt);
-  border-color: var(--qt-indigo-md);
+  background: rgba(79, 70, 229, 0.04);
+  border-color: rgba(79, 70, 229, 0.1);
 }
 .qt-analysis-item--red {
-  background: var(--qt-red-lt);
-  border-color: var(--qt-red-md);
+  background: rgba(220, 38, 38, 0.04);
+  border-color: rgba(220, 38, 38, 0.1);
 }
 .qt-analysis-item--amber {
-  background: var(--qt-amber-lt);
-  border-color: var(--qt-amber-md);
+  background: rgba(217, 119, 6, 0.04);
+  border-color: rgba(217, 119, 6, 0.1);
 }
 
-/* Emoji icon container */
 .qt-analysis-item__icon-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
   flex-shrink: 0;
   line-height: 1;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
-
-.qt-analysis-item__icon-wrap--green {
-  background: #d1fae5;
-}
-.qt-analysis-item__icon-wrap--indigo {
-  background: #c7d2fe;
-}
-.qt-analysis-item__icon-wrap--red {
-  background: #fecaca;
-}
-.qt-analysis-item__icon-wrap--amber {
-  background: #fde68a;
-}
-
 .qt-analysis-item__content {
   flex: 1;
   min-width: 0;
 }
-
-/* Label / eyebrow */
 .qt-analysis-item__label {
   font-size: 0.68rem;
-  font-weight: 800;
-  color: var(--qt-text-300);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  margin: 0 0 5px;
-}
-
-/* Chapter / section name — most prominent in the card */
-.qt-analysis-item__chapter {
-  font-size: 1.05rem;
   font-weight: 600;
+  color: var(--qt-text-300);
+  letter-spacing: 0.02em;
+  margin: 0 0 5px;
+  /* removed uppercase */
+}
+.qt-analysis-item__chapter {
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--qt-text-900);
   letter-spacing: -0.025em;
   line-height: 1.25;
   margin: 0 0 7px;
   word-break: break-word;
 }
-
-/* Full descriptive sentence */
 .qt-analysis-item__desc {
   font-size: 0.82rem;
   font-weight: 500;
@@ -605,7 +536,7 @@
   line-height: 1.55;
 }
 
-/* Highlighted number within sentence */
+/* Inline marks (30%, 80%) */
 .qt-mark {
   display: inline-block;
   font-weight: 800;
@@ -614,41 +545,39 @@
   font-size: 0.85rem;
   vertical-align: middle;
 }
-
 .qt-mark--green {
-  background: #a7f3d0;
+  background: rgba(5, 150, 105, 0.1);
   color: #065f46;
 }
 .qt-mark--indigo {
-  background: #c7d2fe;
+  background: rgba(79, 70, 229, 0.1);
   color: #3730a3;
 }
 .qt-mark--red {
-  background: #fecaca;
+  background: rgba(220, 38, 38, 0.1);
   color: #991b1b;
 }
 .qt-mark--amber {
-  background: #fde68a;
+  background: rgba(217, 119, 6, 0.1);
   color: #92400e;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   Empty State
-   ══════════════════════════════════════════════════════════════════════════════ */
+/* ── Glass Empty State ──────────────────────────────────────────────────── */
 .qt-empty {
-  background: var(--qt-surface);
+  background: var(--qt-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 2px dashed rgba(255, 255, 255, 0.45);
   border-radius: 20px;
   padding: 80px 40px;
   text-align: center;
-  border: 2px dashed var(--qt-border);
 }
-
 .qt-empty__icon {
   font-size: 3rem;
   line-height: 1;
   margin: 0 0 16px;
+  opacity: 0.5;
 }
-
 .qt-empty__title {
   font-size: 1.2rem;
   font-weight: 800;
@@ -656,64 +585,48 @@
   letter-spacing: -0.025em;
   margin: 0 0 8px;
 }
-
 .qt-empty__sub {
   font-size: 0.875rem;
   color: var(--qt-text-300);
   font-weight: 500;
-  margin: 0;
   max-width: 320px;
   margin: 0 auto;
   line-height: 1.6;
 }
 
-/* ══════════════════════════════════════════════════════════════════════════════
-   Responsive
-   ══════════════════════════════════════════════════════════════════════════════ */
+/* ── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .qt-analysis-grid {
     grid-template-columns: 1fr;
   }
 }
-
 @media (max-width: 680px) {
   .qt-card,
   .qt-analysis-card {
     padding: 20px 16px;
     border-radius: 16px;
   }
-
   .qt-card-header {
     flex-direction: column;
   }
-
   .qt-chart-wrap {
-    height: 320px;
+    height: 300px;
   }
-
   .qt-chapter-grid {
     grid-template-columns: 1fr 1fr;
   }
-
   .qt-summary {
     width: 100%;
     justify-content: space-evenly;
   }
-
   .qt-summary-stat {
-    padding: 10px 16px;
+    padding: 12px 16px;
   }
-
-  .qt-analysis-item {
-    padding: 16px;
-  }
-
   .qt-card-title,
   .qt-analysis-title {
     font-size: 1.2rem;
   }
 }
-
 @media (max-width: 420px) {
   .qt-chapter-grid {
     grid-template-columns: 1fr;

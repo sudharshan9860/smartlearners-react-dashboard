@@ -1,54 +1,42 @@
 /* ═══════════════════════════════════════════════════════════════════════════════
-   SelfAssessmentTab — Premium SaaS Design System
-   All 15 improvements applied:
-   1. Color tokens  2. Typography  3. Soft cards  4. Filter pills
-   5. Progress bars  6. Whitespace  7. Row cards  8. BG tint
-   9. Saturation  10. Micro animations  11. Dividers  12. Header
-   13. Score blocks  14. Consistent radius  15. Reduced color areas
-═══════════════════════════════════════════════════════════════════════════════ */
+   SelfAssessmentTab — Glass Premium
+   ═══════════════════════════════════════════════════════════════════════════════ */
 
-/* ─── 1. DESIGN TOKENS ──────────────────────────────────────────────────────── */
 .self-assessment-tab {
-  /* Neutral */
-  --sa-bg: #f8fafc;
-  --sa-card: #ffffff;
-  --sa-border: #e5e7eb;
-  --sa-border-soft: rgba(0, 0, 0, 0.06);
-  --sa-text-primary: #111827;
-  --sa-text-secondary: #6b7280;
-  --sa-text-muted: #9ca3af;
+  /* ── Colour tokens ── */
+  --sa-bg: transparent; /* canvas from body */
+  --sa-card: rgba(255, 255, 255, 0.72);
+  --sa-card-strong: rgba(255, 255, 255, 0.88);
+  --sa-border: rgba(255, 255, 255, 0.6);
+  --sa-border-soft: rgba(255, 255, 255, 0.35);
+  --sa-text-primary: #0f172a;
+  --sa-text-secondary: #475569;
+  --sa-text-muted: #94a3b8;
 
-  /* Brand */
-  --sa-brand: #f97316; /* your orange — keep brand consistent */
+  --sa-brand: #f97316;
   --sa-brand-2: #ea580c;
   --sa-indigo: #4f46e5;
-  --sa-indigo-2: #6366f1;
+  --sa-indigo-2: #818cf8;
 
-  /* Semantic */
-  --sa-success: #16a34a;
+  --sa-success: #10b981;
   --sa-warning: #f59e0b;
   --sa-danger: #ef4444;
 
-  /* Radius */
   --sa-r-sm: 8px;
   --sa-r-md: 12px;
   --sa-r-lg: 16px;
   --sa-r-pill: 999px;
 
-  /* Shadow */
-  --sa-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --sa-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --sa-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.07);
-  --sa-shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.08);
+  --sa-glass-shadow:
+    0 8px 32px rgba(79, 70, 229, 0.07), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --sa-glass-shadow-hover:
+    0 16px 48px rgba(79, 70, 229, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
 
-  /* 8. Soft background */
-  background: var(--sa-bg);
+  background: transparent;
   padding: 8px 0;
-  animation: fadeUp 0.5s ease-out;
-
-  /* 2. Typography */
+  animation: fadeUp 0.45s ease-out;
   font-family:
-    "Inter",
+    "Plus Jakarta Sans",
     "SF Pro Display",
     -apple-system,
     sans-serif;
@@ -56,7 +44,6 @@
   color: var(--sa-text-primary);
 }
 
-/* ─── 10. MICRO ANIMATION SYSTEM ────────────────────────────────────────────── */
 .self-assessment-tab *,
 .self-assessment-tab *::before,
 .self-assessment-tab *::after {
@@ -71,15 +58,14 @@
 
 /* ─── TAB HEADER ────────────────────────────────────────────────────────────── */
 .tab-header {
-  margin-bottom: 40px; /* 6. Whitespace */
+  margin-bottom: 36px;
 }
 
-/* 2. Typography hierarchy */
 .tab-title {
   font-size: 1.75rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--sa-text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   line-height: 1.2;
   margin-bottom: 6px;
 }
@@ -92,44 +78,45 @@
 }
 
 .tab-subtitle {
-  font-size: 0.9rem;
-  font-weight: 400;
+  font-size: 0.875rem;
   color: var(--sa-text-secondary);
   line-height: 1.5;
 }
 
-/* ─── STATS GRID ────────────────────────────────────────────────────────────── */
+/* ─── STATS GRID (glass cards) ───────────────────────────────────────────────── */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
-  margin-bottom: 40px; /* 6. */
+  margin-bottom: 36px;
 }
 
-/* ─── 13. SCORE DISTRIBUTION — minimal stat cards ───────────────────────────── */
+/* ─── SCORE DISTRIBUTION (glass card) ─────────────────────────────────────────── */
 .score-distribution {
   background: var(--sa-card);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   border: 1px solid var(--sa-border);
-  border-radius: var(--sa-r-lg);
-  padding: 24px; /* 3. */
-  margin-bottom: 48px; /* 6. */
-  box-shadow: var(--sa-shadow-xs); /* 3. */
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 36px;
+  box-shadow:
+    var(--sa-glass-shadow),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
 }
 
 .score-dist-title {
-  font-size: 0.875rem;
-  font-weight: 600; /* 2. */
+  font-size: 0.9rem;
+  font-weight: 700;
   color: var(--sa-text-primary);
   margin-bottom: 20px;
   letter-spacing: -0.01em;
 }
-
 .score-dist-sub {
   font-weight: 400;
   color: var(--sa-text-secondary);
 }
 
-/* 13. Upgrade bars to minimal stat cards */
 .score-dist-bars {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -138,75 +125,75 @@
 }
 
 .dist-bar-col {
-  background: var(--sa-card);
-  border: 1px solid var(--sa-border);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: var(--sa-r-md);
   padding: 16px 12px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  box-shadow: var(--sa-shadow-xs);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
 .dist-bar-col:hover {
-  box-shadow: var(--sa-shadow-sm);
-  transform: translateY(-2px); /* 7. lift */
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.08);
+  transform: translateY(-2px);
 }
 
 .dist-bar-count {
-  font-size: 1.375rem; /* 13. bigger number */
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
   line-height: 1;
 }
 
-/* 13. Replace the colored block with a minimal bar underneath */
 .dist-bar-track {
   width: 100%;
-  height: 5px; /* 5. thin */
-  background: var(--sa-border);
+  height: 5px;
+  background: rgba(148, 163, 184, 0.2);
   border-radius: var(--sa-r-pill);
   overflow: hidden;
-  display: block;
 }
 
 .dist-bar-fill {
   height: 100%;
   border-radius: var(--sa-r-pill);
-  transition: width 0.6s ease-in-out; /* 5. animated */
+  transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dist-bar-label {
-  font-size: 0.7rem;
-  font-weight: 500;
+  font-size: 0.68rem;
+  font-weight: 600;
   color: var(--sa-text-muted);
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .score-dist-note {
   font-size: 0.78rem;
   color: var(--sa-text-secondary);
-  background: #f8fafc;
-  border: 1px solid var(--sa-border);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--sa-r-sm);
   padding: 10px 14px;
   margin-top: 4px;
   line-height: 1.5;
 }
 
-/* ─── 6. SECTION HEADER ─────────────────────────────────────────────────────── */
+/* ─── SECTION HEADER ─────────────────────────────────────────────────────────── */
 .section-header {
   margin-bottom: 16px;
 }
-
 .section-header h3 {
-  font-size: 1.125rem; /* 2. */
-  font-weight: 600;
+  font-size: 1.125rem;
+  font-weight: 700;
   color: var(--sa-text-primary);
   letter-spacing: -0.01em;
 }
 
-/* ─── 4. FILTER PILLS ───────────────────────────────────────────────────────── */
+/* ─── FILTER PILLS ─────────────────────────────────────────────────────────────── */
 .filter-bar {
   display: flex;
   gap: 8px;
@@ -218,55 +205,59 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 14px;
-  border: 1.5px solid var(--sa-border);
+  padding: 7px 14px;
+  border: 1px solid var(--sa-border);
   border-radius: var(--sa-r-pill);
-  background: var(--sa-card);
-  font-size: 0.813rem; /* 13px */
-  font-weight: 500;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-size: 0.8125rem;
+  font-weight: 600;
   color: var(--sa-text-secondary);
   cursor: pointer;
+  font-family: inherit;
   letter-spacing: -0.005em;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
 .filter-btn:hover {
-  border-color: var(--sa-brand);
+  border-color: rgba(249, 115, 22, 0.4);
   color: var(--sa-brand);
-  transform: translateY(-1px); /* 4. micro interaction */
-  box-shadow: var(--sa-shadow-sm);
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.1);
 }
 
-/* 4. Active pill with brand shadow */
 .filter-btn-active {
-  background: var(--sa-brand) !important;
-  border-color: var(--sa-brand) !important;
+  background: linear-gradient(
+    135deg,
+    var(--sa-brand),
+    var(--sa-brand-2)
+  ) !important;
+  border-color: transparent !important;
   color: #fff !important;
-  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.28);
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.28) !important;
 }
-
 .filter-btn-active:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(249, 115, 22, 0.35);
 }
 
 .filter-icon {
   font-size: 0.82rem;
   line-height: 1;
 }
-
 .filter-count {
-  background: rgba(0, 0, 0, 0.07);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: var(--sa-r-pill);
   padding: 1px 6px;
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 700;
 }
-
 .filter-btn-active .filter-count {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.25);
 }
 
-/* ─── RESULTS META ──────────────────────────────────────────────────────────── */
+/* ─── RESULTS META ───────────────────────────────────────────────────────────── */
 .results-meta {
   display: flex;
   align-items: center;
@@ -274,12 +265,10 @@
   font-size: 0.82rem;
   color: var(--sa-text-muted);
   margin-bottom: 20px;
-  font-weight: 400;
 }
-
 .results-meta strong {
   color: var(--sa-text-primary);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .clear-filter-btn {
@@ -287,29 +276,32 @@
   border: none;
   color: var(--sa-brand);
   font-size: 0.8rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   padding: 0;
-  letter-spacing: -0.005em;
+  font-family: inherit;
 }
-
 .clear-filter-btn:hover {
   color: var(--sa-brand-2);
   text-decoration: underline;
 }
 
-/* ─── GAP CARDS CONTAINER ───────────────────────────────────────────────────── */
+/* ─── GAP CARDS CONTAINER ──────────────────────────────────────────────────── */
 .gap-cards-container {
   display: grid;
   gap: 16px;
 }
 
-/* ─── 3 + 6. SUBJECT SECTION ────────────────────────────────────────────────── */
+/* ─── SUBJECT SECTION (glass card) ─────────────────────────────────────────── */
 .subject-section {
   background: var(--sa-card);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
   border: 1px solid var(--sa-border);
-  border-radius: var(--sa-r-lg);
-  box-shadow: var(--sa-shadow-xs);
+  border-radius: 18px;
+  box-shadow:
+    var(--sa-glass-shadow),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
   overflow: hidden;
 }
 
@@ -319,16 +311,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  background: #fafafa;
+  background: rgba(255, 255, 255, 0.45);
   border: none;
   cursor: pointer;
   text-align: left;
-  /* 11. subtle divider */
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
-
 .subject-header:hover {
-  background: #f5f5f5;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .subject-header-left {
@@ -346,22 +336,17 @@
   flex-shrink: 0;
 }
 
-/* 2. Typography */
 .subject-name {
   font-size: 0.9375rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--sa-text-primary);
   text-transform: capitalize;
   letter-spacing: -0.01em;
 }
-
 .subject-meta {
-  font-size: 0.775rem;
-  font-weight: 400;
+  font-size: 0.75rem;
   color: var(--sa-text-muted);
-  white-space: nowrap;
 }
-
 .subject-header-right {
   display: flex;
   align-items: center;
@@ -369,31 +354,26 @@
   flex-shrink: 0;
   margin-left: 16px;
 }
-
 .subject-avg {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
-/* 5. Thin gradient progress bar */
 .subject-avg-track {
   width: 80px;
   height: 5px;
-  background: var(--sa-border);
+  background: rgba(148, 163, 184, 0.2);
   border-radius: var(--sa-r-pill);
   overflow: hidden;
 }
-
 .subject-avg-fill {
   height: 100%;
   border-radius: var(--sa-r-pill);
-  transition: width 0.6s ease-in-out;
+  transition: width 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .subject-avg-pct {
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   min-width: 34px;
   text-align: right;
   letter-spacing: -0.01em;
@@ -406,140 +386,114 @@
   display: inline-block;
   user-select: none;
 }
-
 .chevron-open {
   transform: rotate(0deg);
 }
-
 .chevron:not(.chevron-open) {
   transform: rotate(-90deg);
 }
 
-/* 6. breathing room */
 .subject-body {
   padding: 16px;
   display: grid;
   gap: 12px;
 }
 
-/* ─── CHAPTER SECTION ───────────────────────────────────────────────────────── */
+/* ─── CHAPTER SECTION ────────────────────────────────────────────────────────── */
 .chapter-section {
-  background: #fafafa;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--sa-r-md);
   overflow: hidden;
 }
-
 .chapter-header {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 16px;
-  background: var(--sa-card);
-  /* 11. very light divider */
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
 }
-
-/* 2. Typography */
 .chapter-label {
   font-size: 0.825rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--sa-text-primary);
   letter-spacing: -0.005em;
 }
-
 .chapter-meta {
   font-size: 0.75rem;
-  font-weight: 400;
   color: var(--sa-text-muted);
 }
-
 .chapter-cards {
   padding: 10px;
   display: grid;
   gap: 8px;
 }
 
-/* ─── 7. GAP CARD OVERRIDES (GapCard.jsx classes) ───────────────────────────── */
-/* These override whatever GapCard renders to remove the heavy red bar */
-
-/* The progress bar inside GapCard */
+/* ─── GAP CARD (glass) ────────────────────────────────────────────────────── */
 .gap-card {
-  background: var(--sa-card);
-  border: 1px solid var(--sa-border);
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: var(--sa-r-md);
   padding: 18px 20px;
-  box-shadow: var(--sa-shadow-xs);
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
-
 .gap-card:hover {
-  box-shadow: var(--sa-shadow-hover);
-  transform: translateY(-2px); /* 7. subtle lift */
-  border-color: #d1d5db;
+  box-shadow: 0 10px 32px rgba(79, 70, 229, 0.1);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.85);
 }
 
-/* 5. Fix the heavy red bar — make it thin + rounded */
-.gap-card .progress-bar,
-.gap-card [class*="progress"],
-.gap-card [class*="bar"] {
-  height: 5px !important;
-  border-radius: var(--sa-r-pill) !important;
-  background: var(--sa-border) !important;
-  overflow: hidden;
+/* Progress bar override */
+.gap-card .progress-bar-container {
+  height: 5px;
+  background: rgba(148, 163, 184, 0.2);
+}
+.gap-card .progress-bar {
+  height: 5px;
+  border-radius: 999px;
 }
 
-.gap-card .progress-fill,
-.gap-card [class*="progress-fill"],
-.gap-card [class*="bar-fill"] {
-  height: 5px !important;
-  border-radius: var(--sa-r-pill) !important;
-  background: linear-gradient(
-    90deg,
-    var(--sa-indigo-2),
-    var(--sa-indigo)
-  ) !important;
-  transition: width 0.6s ease-in-out !important;
+/* ─── CHAPTER PERFORMANCE CARD (glass) ─────────────────────────────────────── */
+.chapter-performance-card {
+  background: var(--sa-card);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--sa-border);
+  border-radius: 20px;
+  padding: 28px 28px 24px;
+  box-shadow:
+    var(--sa-glass-shadow),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
+  margin-bottom: 32px;
 }
 
-/* Remove raw "100% width red bar" look */
-.gap-card [style*="background: red"],
-.gap-card [style*="background-color: red"],
-.gap-card [style*="background:#ef4444"],
-.gap-card [style*="background: #ef4444"] {
-  height: 5px !important;
-  border-radius: var(--sa-r-pill) !important;
-}
-
-/* Score display: "5/5 (%)" → hide the stray "(%) text via parent */
-.gap-card .score-value,
-.gap-card [class*="score"] {
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+.chapter-performance-card h3 {
+  font-size: 1.125rem;
+  font-weight: 800;
+  margin-bottom: 20px;
   color: var(--sa-text-primary);
+  letter-spacing: -0.02em;
 }
 
-/* 15. Reduce color saturation in subject label inside card */
-.gap-card [class*="subject-label"],
-.gap-card h4,
-.gap-card .card-subject {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--sa-brand);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+/* Custom tooltip */
+.custom-tooltip {
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(12px);
+  padding: 14px 16px;
+  border-radius: 14px;
+  color: #ffffff;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+  font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
-
-/* Column headers (SCORE / TIME / TIME RATING / TYPE) */
-.gap-card .col-label,
-.gap-card [class*="col-header"],
-.gap-card th {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--sa-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+.tooltip-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #f1f5f9;
 }
 
 /* ─── EMPTY STATE ────────────────────────────────────────────────────────────── */
@@ -547,95 +501,60 @@
   text-align: center;
   padding: 72px 20px;
   background: var(--sa-card);
-  border-radius: var(--sa-r-lg);
-  border: 2px dashed var(--sa-border);
-  box-shadow: var(--sa-shadow-xs);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 18px;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  box-shadow: var(--sa-glass-shadow);
 }
-
 .empty-icon {
   font-size: 3rem;
   margin-bottom: 14px;
   opacity: 0.4;
 }
-
 .empty-state h3 {
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--sa-text-primary);
   margin-bottom: 6px;
   letter-spacing: -0.01em;
 }
-
 .empty-state p {
   font-size: 0.875rem;
   color: var(--sa-text-secondary);
 }
 
-/* ─── RESPONSIVE ────────────────────────────────────────────────────────────── */
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .tab-title {
     font-size: 1.375rem;
   }
-
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-
   .score-dist-bars {
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
   }
-
   .dist-bar-col {
     padding: 12px 8px 10px;
   }
-
   .dist-bar-count {
     font-size: 1.1rem;
   }
-
   .filter-bar {
     gap: 6px;
   }
-
   .filter-btn {
     padding: 5px 10px;
-    font-size: 0.775rem;
+    font-size: 0.75rem;
   }
-
   .subject-avg,
   .subject-meta {
     display: none;
   }
-}
-.chapter-performance-card {
-  background: #ffffff;
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  margin-bottom: 32px;
-}
-
-.chapter-performance-card h3 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #111827;
-}
-
-/* Tooltip */
-.custom-tooltip {
-  background: #111827;
-  padding: 14px 16px;
-  border-radius: 12px;
-  color: #ffffff;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-  font-size: 13px;
-}
-
-.tooltip-title {
-  font-weight: 600;
-  margin-bottom: 6px;
-  font-size: 13px;
+  .chapter-performance-card {
+    padding: 20px;
+  }
 }

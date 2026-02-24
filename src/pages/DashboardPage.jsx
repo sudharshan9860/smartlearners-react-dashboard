@@ -15,7 +15,6 @@ const DashboardPage = () => {
   const { loadAllData, loading } = useDashboard();
 
   useEffect(() => {
-    // Load all dashboard data when component mounts
     loadAllData();
   }, []);
 
@@ -24,7 +23,10 @@ const DashboardPage = () => {
       <TopNav username={user?.username} />
 
       <div className="dashboard-container">
-        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        {/* Glass pill wrapper around tab navigation */}
+        <div className="tab-nav-wrapper">
+          <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        </div>
 
         <div className="tab-content">
           {activeTab === "self" && <SelfAssessmentTab />}
